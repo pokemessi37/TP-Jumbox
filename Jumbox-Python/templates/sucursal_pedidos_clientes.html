@@ -1,0 +1,34 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID Pedido</th>
+      <th>Fecha</th>
+      <th>Cliente</th>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Estado</th>
+      <th>Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in pedidos %}
+    <tr>
+      <td>{{ p['id_pedido'] }}</td>
+      <td>{{ p['fecha'] }}</td>
+      <td>{{ p['cliente_nombre'] }}</td>
+      <td>{{ p['producto_nombre'] }}</td>
+      <td>{{ p['cantidad'] }}</td>
+      <td>{{ p['estado'] or 'Pendiente' }}</td>
+      <td>
+        {% if not p['estado'] or p['estado'] != 'enviado' %}
+        <form action="{{ url_for('sucursal_enviar_pedido', id_pedido=p['id_pedido']) }}" method="post">
+          <button type="submit" class="btn-primary" style="font-size:13px;">Enviar</button>
+        </form>
+        {% else %}
+        <span style="color:gray;">✔ Enviado</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

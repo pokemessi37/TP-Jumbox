@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Jumbox</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+
+        <div class="categorias" tabindex="0">
+            <div class="cat-btn">
+                <i class="fa-solid fa-bars"></i>
+                <span>CATEGORÍAS</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-desplegable" aria-hidden="true">
+                <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
+                    <a href="{{ url_for('home') }}">Todos</a>
+                </li>
+                {% for categoria in categorias or [] %}
+                <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
+                    <a href="{{ url_for('home', categoria=categoria) }}">{{ categoria }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="busqueda">
+            <input type="text" placeholder="Buscar...">
+            <button><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                {% if session.get('id_cliente') %}
+                {% if session.get('tipo') == 'admin' %}
+                    <!-- Opciones exclusivas del admin -->
+                    <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
+                {% elif session.get('tipo') == 'sucursal' %}
+                    <!-- Opciones para usuarios de tipo sucursal -->
+                    <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
+                {% else %}
+                    <!-- Opciones para usuarios comunes -->
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                {% endif %}
+            
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
+            </ul>
+        </div>
+
+        <div class="carrito">
+            <a href="{{ url_for('carrito') }}"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+        </div>
+    </header>
+    
+    <div class="mensajes-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main>
+        <div class="productos-container">
+            {% if categoria_actual %}
+                <h2>{{ categoria_actual }}</h2>
+            {% else %}
+                <h2>Todos los Productos</h2>
+            {% endif %}
+            
+            {% if productos %}
+            <div class="productos-grid">
+                {% for producto in productos %}
+                <div class="producto-card">
+                    <div class="producto-imagen">
+                        {% if producto.imagen_base64 %}
+                            <img src="data:image/jpeg;base64,{{ producto.imagen_base64 }}" alt="{{ producto.nombre }}">
+                        {% else %}
+                            <div class="sin-imagen">
+                                <i class="fa-solid fa-image"></i>
+                                <p>Sin imagen</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="producto-info">
+                        <h3>{{ producto.nombre }}</h3>
+                        <p class="producto-precio">${{ "%.2f"|format(producto.precio) }}</p>
+                        <p class="producto-stock">
+                            {% if producto.stock > 0 %}
+                                <i class="fa-solid fa-check-circle" style="color: #07b407;"></i> Stock disponible: {{ producto.stock }}
+                            {% else %}
+                                <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
+                            {% endif %}
+                        </p>
+                        <form method="POST" action="{{ url_for('carrito_actualizar_item') }}" class="form-agregar-carrito">
+                            <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                            <div class="cantidad-container">
+                                <label for="cantidad-{{ producto.id }}">Cantidad:</label>
+                                <input type="number" 
+                                    id="cantidad-{{ producto.id }}" 
+                                    name="cantidad" 
+                                    value="1" 
+                                    min="1" 
+                                    max="{{ producto.stock }}" 
+                                    {% if producto.stock == 0 %}disabled{% endif %}>
+                            </div>
+                            <button type="submit" class="btn-agregar-carrito" {% if producto.stock == 0 %}disabled{% endif %}>
+                                <i class="fa-solid fa-cart-plus"></i> Agregar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="sin-productos">
+                <i class="fa-solid fa-box-open"></i>
+                <p>No hay productos disponibles en este momento.</p>
+                {% if session.get('tipo') == 'admin' %}
+                    <a href="{{ url_for('crear_producto') }}" class="btn primary">Crear primer producto</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>

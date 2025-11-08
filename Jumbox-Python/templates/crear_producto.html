@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Producto</title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Administración</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+    
+        <div class="titulo-header">
+            <h1>Crear Producto</h1>
+        </div>
+    
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <div class="formulario-container">
+            <form method="POST" enctype="multipart/form-data">
+                <div>
+                    <label for="nombre"><strong>Nombre del Producto</strong></label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Coca Cola 2L" required>
+                </div>
+                
+                <div>
+                    <label for="precio"><strong>Precio</strong></label>
+                    <input type="number" id="precio" name="precio" step="0.01" placeholder="Ej: 1500.00" required>
+                </div>
+    
+                <div>
+                    <label for="stock"><strong>Stock</strong></label>
+                    <input type="number" id="stock" name="stock" placeholder="Ej: 50" required>
+                </div>
+                
+                <div>
+                    <label for="categoria"><strong>Categoría</strong></label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Seleccionar categoría</option>
+                        {% for c in categorias or [] %}
+                            <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="imagen"><strong>Imagen del Producto</strong></label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*" required>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Formatos permitidos: PNG, JPG, JPEG, GIF, WEBP
+                    </small>
+                </div>
+    
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            
+                <button type="submit">Crear Producto</button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
+</body>
+</html>

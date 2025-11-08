@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Carrito · JUMBOX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="logo">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+        </a>
+    </div>
+
+    <div class="categorias" tabindex="0">
+      <div class="cat-btn">
+          <i class="fa-solid fa-bars"></i>
+          <span>CATEGORÍAS</span>
+          <i class="fa-solid fa-chevron-down"></i>
+      </div>
+      <ul class="menu-desplegable" aria-hidden="true">
+          <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
+              <a href="{{ url_for('home') }}">Todos</a>
+          </li>
+          {% for categoria in categorias or [] %}
+          <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
+              <a href="{{ url_for('home', categoria=categoria) }}">{{ categoria }}</a>
+          </li>
+          {% endfor %}
+      </ul>
+  </div>
+
+
+    <div class="busqueda">
+        <input type="text" placeholder="Buscar...">
+        <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <div class="cuenta" tabindex="0">
+        <div class="cuenta-btn">
+            <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-cuenta" aria-hidden="true">
+            {% if session.get('id_cliente') %}
+            {% if session.get('tipo') == 'admin' %}
+                <!-- Opciones exclusivas del admin -->
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% else %}
+                <!-- Opciones para usuarios comunes -->
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% endif %}
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="carrito">
+        <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+    </div>
+</header>
+
+<main class="contenedor">
+  <h2>Carrito</h2>
+  <p class="muted">Cliente: <strong>{{ cliente.nombre if cliente else 'Invitado' }}</strong></p>
+  {% if msg %}<div class="alert success mensajes-flash">{{ msg }}</div>{% endif %}
+
+  <!-- Cambiar sucursal -->
+  <section class="card">
+    <form method="post" action="{{ url_for('carrito_cambiar_sucursal') }}" class="grid grid2">
+      <div>
+        <label>Sucursal</label>
+        <select name="sucursal_id">
+          {% for s in sucursales or [] %}
+            <option value="{{ s.id }}" {{ 'selected' if sucursal_actual and s.id==sucursal_actual.id else '' }}>
+              {{ s.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="acciones">
+        <button class="btn">Cambiar</button>
+        <a class="btn" href="{{ url_for('productos') }}">+ Agregar productos</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Items -->
+  <section class="card">
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="right">Precio</th>
+            <th class="center">Cantidad</th>
+            <th class="right">Subtotal</th>
+            <th class="right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if items and items|length %}
+          {% for it in items %}
+          <tr>
+            <td>
+              <span class="pill">#{{ it.producto_id }}</span>
+              {{ it.nombre }}
+            </td>
+            <td class="right">${{ '%.2f'|format(it.precio) }}</td>
+            <td class="center">
+              <form method="post" action="{{ url_for('carrito_actualizar_item') }}">
+                <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
+                <input type="number" name="cantidad" min="1" step="1" value="{{ it.cantidad }}" style="width:90px">
+                <button class="btn">Actualizar</button>
+              </form>
+            </td>
+            <td class="right">${{ '%.2f'|format(it.subtotal) }}</td>
+            <td class="right">
+              <form method="post" action="{{ url_for('carrito_eliminar_item') }}">
+                <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
+                <button class="btn danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="5" class="center">Tu carrito está vacío.</td></tr>
+        {% endif %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="right">Total</td>
+            <td class="right total-cell">${{ '%.2f'|format(total or 0) }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <!-- Checkout -->
+  <section class="card">
+    <h3>Finalizar compra</h3>
+    <form method="post" action="{{ url_for('carrito_checkout') }}" class="grid">
+      <div>
+        <label>Método de pago</label>
+        <select name="metodo_pago" required>
+          {% for mp in metodos_pago or ['EFECTIVO','TARJETA'] %}
+            <option value="{{ mp }}">{{ mp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Observaciones</label>
+        <textarea name="observaciones" rows="3"></textarea>
+      </div>
+      <button class="btn primary" {% if not items or not items|length %}disabled{% endif %}>Confirmar compra</button>
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+</footer>
+</body>
+</html>
