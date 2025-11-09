@@ -69,28 +69,7 @@
 
 <main class="contenedor">
   <h2>Carrito</h2>
-  <p class="muted">Cliente: <strong>{{ cliente.nombre if cliente else 'Invitado' }}</strong></p>
   {% if msg %}<div class="alert success mensajes-flash">{{ msg }}</div>{% endif %}
-
-  <!-- Cambiar sucursal -->
-  <section class="card">
-    <form method="post" action="{{ url_for('carrito_cambiar_sucursal') }}" class="grid grid2">
-      <div>
-        <label>Sucursal</label>
-        <select name="sucursal_id">
-          {% for s in sucursales or [] %}
-            <option value="{{ s.id }}" {{ 'selected' if sucursal_actual and s.id==sucursal_actual.id else '' }}>
-              {{ s.nombre }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="acciones">
-        <button class="btn">Cambiar</button>
-        <a class="btn" href="{{ url_for('productos') }}">+ Agregar productos</a>
-      </div>
-    </form>
-  </section>
 
   <!-- Items -->
   <section class="card">

@@ -782,3 +782,481 @@ td{
 }
 
 
+/* =====================================
+   SELECTOR DE SUCURSAL (debajo del header)
+===================================== */
+.selector-sucursal-container {
+    background: linear-gradient(135deg, #07b407 0%, #06a306 100%);
+    padding: 15px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 9;
+}
+
+.selector-sucursal-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.selector-sucursal-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.selector-sucursal-form label {
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.selector-sucursal-form label i {
+    font-size: 18px;
+}
+
+#sucursal-select {
+    padding: 10px 15px;
+    border: 2px solid white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+#sucursal-select:hover {
+    border-color: #f5f5f5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#sucursal-select:focus {
+    outline: none;
+    border-color: #f5f5f5;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.btn-info-sucursal {
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-info-sucursal:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-info-sucursal i {
+    color: #07b407;
+    font-size: 18px;
+}
+
+/* =====================================
+   MODAL DE INFORMACIÓN DE SUCURSALES
+===================================== */
+.modal-sucursal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-sucursal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-sucursal-content {
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    max-width: 550px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+    padding: 0;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.modal-title {
+    margin: 0 0 25px 0;
+    color: #07b407;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.modal-title i {
+    font-size: 26px;
+}
+
+.sucursales-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.sucursal-item {
+    background: #f8f9fa;
+    padding: 18px;
+    border-radius: 10px;
+    border-left: 4px solid #07b407;
+    transition: all 0.3s ease;
+}
+
+.sucursal-item:hover {
+    background: #e8f5e9;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(7, 180, 7, 0.15);
+}
+
+.sucursal-item h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.sucursal-item p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+}
+
+.sucursal-item p i {
+    color: #07b407;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .selector-sucursal-form {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .selector-sucursal-form label {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+    
+    #sucursal-select {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .modal-sucursal-content {
+        padding: 25px;
+        margin: 20px;
+    }
+    
+    .modal-title {
+        font-size: 20px;
+    }
+}
+
+/* =====================================
+PEDIR STOCK - SUCURSAL
+===================================== */
+.pedir-stock-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.sucursal-header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.sucursal-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #191919;
+}
+
+.pedir-stock-form {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pedir-stock-form .form-group {
+    margin-bottom: 25px;
+}
+
+.pedir-stock-form label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.pedir-stock-form select,
+.pedir-stock-form input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 15px;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.pedir-stock-form select:focus,
+.pedir-stock-form input[type="number"]:focus {
+    outline: none;
+    border-color: #07b407;
+    box-shadow: 0 0 0 2px rgba(7, 180, 7, 0.1);
+}
+
+.stock-actual-display {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    border-left: 4px solid #07b407;
+}
+
+.stock-actual-display p {
+    margin: 0;
+    font-size: 15px;
+    color: #333;
+}
+
+.stock-actual-display strong {
+    color: #07b407;
+}
+
+.btn-pedir {
+    width: 100%;
+    padding: 14px;
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #333;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-pedir:hover {
+    background-color: #07b407;
+    color: white;
+    border-color: #07b407;
+}
+
+/* =====================================
+SOLICITUDES - ADMIN
+===================================== */
+.solicitudes-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.deposito-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.deposito-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #191919;
+}
+
+.solicitudes-list {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.solicitud-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.solicitud-card:hover {
+    background: #f5f5f5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.solicitud-card:last-child {
+    margin-bottom: 0;
+}
+
+.solicitud-info {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    flex: 1;
+}
+
+.solicitud-sucursal {
+    font-size: 15px;
+    color: #333;
+    min-width: 150px;
+}
+
+.solicitud-producto {
+    font-size: 15px;
+    color: #666;
+    min-width: 180px;
+}
+
+.solicitud-stock {
+    font-size: 15px;
+    color: #666;
+    min-width: 100px;
+}
+
+.solicitud-accion {
+    flex-shrink: 0;
+}
+
+.btn-enviar {
+    padding: 10px 30px;
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #333;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-enviar:hover {
+    background-color: #07b407;
+    color: white;
+    border-color: #07b407;
+}
+
+.sin-solicitudes {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.sin-solicitudes i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: #ddd;
+}
+
+.sin-solicitudes p {
+    font-size: 18px;
+    color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pedir-stock-form {
+        padding: 25px;
+    }
+    
+    .solicitud-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .solicitud-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .solicitud-accion {
+        width: 100%;
+    }
+    
+    .btn-enviar {
+        width: 100%;
+    }
+}

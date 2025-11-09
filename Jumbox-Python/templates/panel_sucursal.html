@@ -22,7 +22,7 @@
     <div class="cuenta" tabindex="0">
         <div class="cuenta-btn">
             <i class="fa-solid fa-user"></i> 
-            <span>Cuenta</span> 
+            <span>{{ session.get('nombre', 'Cuenta') }}</span> 
             <i class="fa-solid fa-chevron-down"></i>
         </div>
         <ul class="menu-cuenta" aria-hidden="true">
@@ -34,9 +34,9 @@
 
 <main>
   <ul class="opciones-admin">
-    <li><a href="{{ url_for('panel_sucursal') }}">Almacen</a></li>
-      <li><a href="{{ url_for('panel_sucursal') }}">Pedir Stock</a></li>
-      <li><a href="{{ url_for('sucursal_pedidos_clientes') }}">Ver Pedidos Clientes</a></li>
+    <li><a href="{{ url_for('sucursal_almacen') }}"><i class="fa-solid fa-warehouse"></i> Almacén</a></li>
+    <li><a href="{{ url_for('sucursal_pedir_stock') }}"><i class="fa-solid fa-box"></i> Pedir Stock</a></li>
+    <li><a href="{{ url_for('sucursal_pedidos_clientes') }}"><i class="fa-solid fa-shopping-bag"></i> Ver Pedidos Clientes</a></li>
   </ul>
 </main>
 

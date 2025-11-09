@@ -72,6 +72,59 @@
         </div>
     </header>
     
+<!-- Selector de Sucursal (debajo del header) -->
+<div class="selector-sucursal-container">
+    <div class="selector-sucursal-wrapper">
+        <form method="POST" action="{{ url_for('cambiar_sucursal') }}" class="selector-sucursal-form">
+            <label for="sucursal-select">
+                <i class="fa-solid fa-store"></i> Comprar en:
+            </label>
+            <select name="cliente_sucursal_id" id="sucursal-select" onchange="this.form.submit()">
+                {% for s in sucursales %}
+                    <option value="{{ s['id'] }}" {% if cliente_sucursal_id == s['id'] %}selected{% endif %}>
+                        {{ s['nombre'] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="button" class="btn-info-sucursal" onclick="mostrarInfoSucursal()" title="Ver direcciones">
+                <i class="fa-solid fa-info-circle"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de información de sucursales -->
+<div id="modalSucursal" class="modal-sucursal">
+    <div class="modal-sucursal-content">
+        <button class="modal-close" onclick="cerrarModalSucursal()">&times;</button>
+        <h3 class="modal-title">
+            <i class="fa-solid fa-map-marker-alt"></i> Nuestras Sucursales
+        </h3>
+        <div class="sucursales-list">
+            {% for s in sucursales %}
+            <div class="sucursal-item">
+                <h4>{{ s['nombre'] }}</h4>
+                <p>
+                    <i class="fa-solid fa-location-dot"></i> 
+                    {{ s['direccion'] or 'Dirección no disponible' }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function mostrarInfoSucursal() {
+    document.getElementById('modalSucursal').classList.add('show');
+}
+
+function cerrarModalSucursal() {
+    document.getElementById('modalSucursal').classList.remove('show');
+}
+</script>
+
+
     <div class="mensajes-flash">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
