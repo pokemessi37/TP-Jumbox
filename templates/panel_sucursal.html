@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Panel Sucursal</title>
+</head>
+<body class="sucursal-page">
+  <header class="main-header">
+    <div class="logo">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+        </a>
+    </div>
+
+    <div class="titulo-header">
+        <h1>Panel Sucursal</h1>
+    </div>
+
+    <div class="cuenta" tabindex="0">
+        <div class="cuenta-btn">
+            <i class="fa-solid fa-user"></i> 
+            <span>{{ session.get('nombre', 'Cuenta') }}</span> 
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-cuenta" aria-hidden="true">
+          <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+            <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+        </ul>
+    </div>
+</header>
+
+<main>
+  <ul class="opciones-admin">
+    <li><a href="{{ url_for('sucursal_almacen') }}"><i class="fa-solid fa-warehouse"></i> Almacén</a></li>
+    <li><a href="{{ url_for('sucursal_pedir_stock') }}"><i class="fa-solid fa-box"></i> Pedir Stock</a></li>
+    <li><a href="{{ url_for('sucursal_pedidos_clientes') }}"><i class="fa-solid fa-shopping-bag"></i> Ver Pedidos Clientes</a></li>
+  </ul>
+</main>
+
+<footer>
+  <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+</footer>
+
+</body>
+</html>

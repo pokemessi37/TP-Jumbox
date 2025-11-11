@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Pedidos de Clientes</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+        <div class="titulo-header">
+            <h1>Pedidos de Clientes</h1>
+        </div>
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Mi Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <div class="mensajes-flash">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="pedidos-clientes-container">
+            <div class="card-pedidos">
+                <h2><i class="fa-solid fa-shopping-bag"></i> Pedidos Pendientes</h2>
+                
+                {% if pedidos %}
+                <div class="tabla-wrapper">
+                    <table class="tabla-pedidos">
+                        <thead>
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Producto</th>
+                                <th class="center">Cantidad</th>
+                                <th class="center">Estado</th>
+                                <th class="center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in pedidos %}
+                            <tr class="{% if p['estado'] == 'enviado' %}pedido-enviado{% endif %}">
+                                <td><strong>#{{ p['id_pedido'] }}</strong></td>
+                                <td>{{ p['fecha'] }}</td>
+                                <td>{{ p['cliente_nombre'] }}</td>
+                                <td>{{ p['producto_nombre'] }}</td>
+                                <td class="center">{{ p['cantidad'] }}</td>
+                                <td class="center">
+                                    {% if p['estado'] == 'enviado' %}
+                                        <span class="estado-badge enviado">
+                                            <i class="fa-solid fa-check-circle"></i> Enviado
+                                        </span>
+                                    {% elif p['estado'] == 'pendiente' %}
+                                        <span class="estado-badge pendiente">
+                                            <i class="fa-solid fa-clock"></i> Pendiente
+                                        </span>
+                                    {% else %}
+                                        <span class="estado-badge pendiente">
+                                            <i class="fa-solid fa-clock"></i> Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="center">
+                                    {% if not p['estado'] or p['estado'] != 'enviado' %}
+                                    <form action="{{ url_for('sucursal_enviar_pedido', id_pedido=p['id_pedido']) }}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-enviar-pedido">
+                                            <i class="fa-solid fa-truck"></i> Enviar
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="ya-enviado">
+                                        <i class="fa-solid fa-check"></i> Completado
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="sin-pedidos">
+                    <i class="fa-solid fa-box-open"></i>
+                    <p>No hay pedidos de clientes en este momento</p>
+                </div>
+                {% endif %}
+
+                <div class="acciones-footer">
+                    <a href="{{ url_for('panel_sucursal') }}" class="btn-volver">
+                        <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>

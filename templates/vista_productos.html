@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Productos · JUMBOX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="logo">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+        </a>
+    </div>
+
+    <div class="categorias" tabindex="0">
+        <div class="cat-btn">
+            <i class="fa-solid fa-bars"></i>
+            <span>CATEGORÍAS</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-desplegable" aria-hidden="true">
+            <li><a href="#">Almacén</a></li>
+            <li><a href="#">Bebidas</a></li>
+            <li><a href="#">Limpieza</a></li>
+            <li><a href="#">Alimentos</a></li>
+            <li><a href="#">Congelados</a></li>
+        </ul>
+    </div>
+
+
+    <div class="busqueda">
+        <input type="text" placeholder="Buscar...">
+        <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <div class="cuenta" tabindex="0">
+        <div class="cuenta-btn">
+            <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-cuenta" aria-hidden="true">
+            {% if session.get('id_cliente') %}
+            {% if session.get('tipo') == 'admin' %}
+                <!-- Opciones exclusivas del admin -->
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% else %}
+                <!-- Opciones para usuarios comunes -->
+                <li><a href="{{ url_for('home') }}">Perfil</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% endif %}
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="carrito">
+        <a href="{{ url_for('carrito') }}"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+    </div>
+</header>
+
+<main class="contenedor">
+
+  {% if msg %}<div class="alert success mensajes-flash">{{ msg }}</div>{% endif %}
+
+  <!-- FILTROS -->
+  <section class="card">
+    <h2>Productos</h2>
+    <form method="get" action="{{ url_for('productos') }}" class="grid grid3">
+      <div>
+        <label for="inp-q">Buscar</label>
+        <input id="inp-q" type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Nombre o categoría">
+      </div>
+      <div>
+        <label for="sel-cat">Categoría</label>
+        <select id="sel-cat" name="categoria">
+          <option value="">Todos</option>
+          {% for c in categorias or [] %}
+            <option value="{{ c }}" {{ 'selected' if request.args.get('categoria')==c else '' }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="sel-est">Estado</label>
+        <select id="sel-est" name="estado">
+          <option value="">Todos</option>
+          <option value="1" {{ 'selected' if request.args.get('estado')=='1' else '' }}>Activos</option>
+          <option value="0" {{ 'selected' if request.args.get('estado')=='0' else '' }}>Inactivos</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1">
+        <button class="btn">Aplicar filtros</button>
+      </div>
+    </form>
+  </section>
+
+<section class="card">
+  <h2>Listado de productos</h2>
+  <div class="tabla-wrapper">
+    <table class="tabla">
+      <thead>
+        <tr><th>ID</th><th>Nombre</th><th class="right">Precio</th><th class="center">Stock</th><th class="right">Agregar</th></tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td>#{{ p.id }}</td>
+          <td>{{ p.nombre }}</td>
+          <td class="right">${{ '%.2f'|format(p.precio) }}</td>
+          <td class="center">{{ p.stock }}</td>
+          <td class="right">
+            <form method="post" action="{{ url_for('carrito_actualizar_item') }}">
+              <input type="hidden" name="producto_id" value="{{ p.id }}">
+              <input type="number" name="cantidad" min="1" value="1" style="width:80px">
+              <button class="btn">Agregar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+          <tr><td colspan="5" class="center">Sin productos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+  <!-- LISTADO -->
+  <section class="card">
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th class="right">Precio</th>
+            <th class="center">Estado</th>
+            <th class="right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if productos and productos|length %}
+          {% for p in productos %}
+          <tr class="{{ '' if p.activo else 'fila-inactiva' }}">
+            <td>#{{ p.id }}</td>
+            <td>{{ p.nombre }}</td>
+            <td><span class="pill">{{ p.categoria }}</span></td>
+            <td class="right">${{ '%.2f'|format(p.precio) }}</td>
+            <td class="center">{{ p.stock_minimo }}</td>
+            <td class="center">
+              {% if p.activo %}
+                <span class="pill ok">Activo</span>
+              {% else %}
+                <span class="pill off">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="right">
+              <div class="acciones">
+                <form method="get" action="{{ url_for('productos') }}">
+                  <input type="hidden" name="edit" value="{{ p.id }}">
+                  <button class="btn">Editar</button>
+                </form>
+                {% if p.activo %}
+                  <form method="post" action="{{ url_for('productos_desactivar', prod_id=p.id) }}">
+                    <button class="btn danger">Desactivar</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ url_for('productos_activar', prod_id=p.id) }}">
+                    <button class="btn success">Activar</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="7" class="center">No hay productos para mostrar.</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+</footer>
+</body>
+</html>

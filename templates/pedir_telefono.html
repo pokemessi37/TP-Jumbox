@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+        <title>Ingresar teléfono</title>
+    </head>
+    <body id="body_tel">
+        <h1 id="titulo_tel">Por favor, ingresa tu número de teléfono</h1>
+        <form method="POST" id="form_tel">
+            <label for="telefono" id="label_tel">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" required>
+            <button type="submit" id="boton_tel">Continuar</button>
+        </form>
+    </body>
+</html>
