@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <title>Iniciar Sesion</title>
 </head>
 <body>
@@ -52,9 +53,11 @@
                 {% endif %}
             {% endwith %}
             <button type="submit">Iniciar Sesion</button>
-            
-
         </form>
+        <a href="{{ url_for('logingoogle') }}" class="btn-google">
+            <img src="{{ url_for('static', filename='img/logo-google.png') }}" alt="Google" class="google-logo">
+            Iniciar con Google
+        </a>
     </div>
 </body>
 </html>

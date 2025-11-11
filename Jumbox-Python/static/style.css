@@ -542,6 +542,39 @@ h2 {
     font-weight: bold;
     margin-bottom: 10px;
 }
+.formulario-container button,
+.formulario-container .btn-google {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.formulario-container .btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    padding: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.formulario-container .btn-google:hover {
+    background-color: #f8f8f8;
+    border-color: #bbb;
+}
+
+.google-logo {
+    width: 22px;
+    height: 22px;
+    margin-right: 10px;
+}
 
 /* ===========================
 Complemento vistas Productos/Carrito
@@ -1258,5 +1291,296 @@ SOLICITUDES - ADMIN
     
     .btn-enviar {
         width: 100%;
+    }
+}
+
+/*======== Numero de telefono =========*/
+#body_tel{
+    font-family: Arial, sans-serif;
+    background-color: #07b407d2;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+#titulo_tel{
+    color: white;
+    margin-bottom: 25px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+#form_tel{
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+}
+#label_tel{
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+#telefono{
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    outline: none;
+}
+#telefono:focus{
+    border-color: #07b407;
+    box-shadow: 0 0 5px #07b40766;
+}
+#boton_tel{
+    width: 100%;
+    padding: 12px;
+    background-color: #07b407;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+#boton_tel:hover {
+    background-color: #06a306;
+}
+.mensaje{
+    margin-top: 15px;
+    font-size: 14px;
+    color: red;
+}
+
+
+/* =====================================
+PEDIDOS DE CLIENTES - SUCURSAL
+===================================== */
+
+.pedidos-clientes-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.card-pedidos {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-pedidos h2 {
+    margin: 0 0 30px 0;
+    color: #333;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.card-pedidos h2 i {
+    color: #07b407;
+}
+
+.tabla-pedidos {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.tabla-pedidos thead {
+    background: #f8f9fa;
+}
+
+.tabla-pedidos th {
+    padding: 15px 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #555;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tabla-pedidos th.center {
+    text-align: center;
+}
+
+.tabla-pedidos tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-pedidos tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.tabla-pedidos tbody tr.pedido-enviado {
+    background-color: #f0f9f0;
+}
+
+.tabla-pedidos tbody tr.pedido-enviado:hover {
+    background-color: #e8f5e8;
+}
+
+.tabla-pedidos td {
+    padding: 16px 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.tabla-pedidos td.center {
+    text-align: center;
+}
+
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.estado-badge.pendiente {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.estado-badge.enviado {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.btn-enviar-pedido {
+    padding: 8px 20px;
+    background-color: #07b407;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-enviar-pedido:hover {
+    background-color: #06a306;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(7, 180, 7, 0.3);
+}
+
+.ya-enviado {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sin-pedidos {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+
+.sin-pedidos i {
+    font-size: 72px;
+    margin-bottom: 20px;
+    color: #ddd;
+}
+
+.sin-pedidos p {
+    font-size: 18px;
+    color: #999;
+    margin: 0;
+}
+
+.acciones-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+    background-color: #e9ecef;
+    border-color: #ccc;
+    transform: translateX(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pedir-stock-form {
+        padding: 25px;
+    }
+    
+    .solicitud-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .solicitud-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .solicitud-accion {
+        width: 100%;
+    }
+    
+    .btn-enviar {
+        width: 100%;
+    }
+
+    .card-pedidos {
+        padding: 20px;
+    }
+
+    .tabla-wrapper {
+        overflow-x: auto;
+    }
+
+    .tabla-pedidos {
+        min-width: 800px;
+    }
+
+    .card-pedidos h2 {
+        font-size: 20px;
     }
 }
