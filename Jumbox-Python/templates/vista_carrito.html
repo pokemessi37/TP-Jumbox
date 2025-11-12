@@ -46,20 +46,28 @@
             <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
         </div>
         <ul class="menu-cuenta" aria-hidden="true">
-            {% if session.get('id_cliente') %}
-            {% if session.get('tipo') == 'admin' %}
-                <!-- Opciones exclusivas del admin -->
-                <li><a href="{{ url_for('admin') }}">Admin</a></li>
-                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
-            {% else %}
-                <!-- Opciones para usuarios comunes -->
-                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
-            {% endif %}
-            {% else %}
-                <!-- Opciones para visitantes -->
-                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
-                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
-            {% endif %}
+          {% if session.get('id_cliente') %}
+          {% if session.get('tipo') == 'admin' %}
+              <!-- Opciones exclusivas del admin -->
+              <li><a href="{{ url_for('admin') }}">Admin</a></li>
+              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+      
+          {% elif session.get('tipo') == 'sucursal' %}
+              <!-- Opciones para usuarios de tipo sucursal -->
+              <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+      
+          {% else %}
+              <!-- Opciones para usuarios comunes -->
+              <li><a href="{{ url_for('logout') }}">Mis Compras</a></li>
+              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+          {% endif %}
+      
+      {% else %}
+          <!-- Opciones para visitantes -->
+          <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+          <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+      {% endif %}
         </ul>
     </div>
 
@@ -67,6 +75,18 @@
         <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
     </div>
 </header>
+
+
+<div class="mensajes-flash">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+          {% for category, message in messages %}
+              <div class="alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+</div>
+
 
 <main class="contenedor">
   <h2>Carrito</h2>

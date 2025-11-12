@@ -43,28 +43,28 @@
 <main>
     <div class="formulario-container">
         <form method="POST" enctype="multipart/form-data">
-             {% if producto %}
+            {% if producto %}
                 <p style="font-size: 13px; color: #555;">Editando: <strong>{{ producto['nombre'] }}</strong></p>
             {% endif %}
             <div>
                 <label for="nombre"><strong>Nombre del Producto</strong></label>
                 <input type="text" id="nombre" name="nombre"
-                       placeholder="Ej: Coca Cola 2L"
-                       value="{{ producto['nombre'] if producto else '' }}" required>
+                    placeholder="Ej: Coca Cola 2L"
+                    value="{{ producto['nombre'] if producto else '' }}" required>
             </div>
             
             <div>
                 <label for="precio"><strong>Precio</strong></label>
                 <input type="number" id="precio" name="precio" step="0.01"
-                       placeholder="Ej: 1500.00"
-                       value="{{ producto['precio'] if producto else '' }}" required>
+                    placeholder="Ej: 1500.00"
+                    value="{{ producto['precio'] if producto else '' }}" required>
             </div>
 
             <div>
                 <label for="stock"><strong>Stock</strong></label>
                 <input type="number" id="stock" name="stock"
-                       placeholder="Ej: 50"
-                       value="{{ producto['stock'] if producto else '' }}" required>
+                    placeholder="Ej: 50"
+                    value="{{ producto['stock'] if producto else '' }}" required>
             </div>
             
             <div>

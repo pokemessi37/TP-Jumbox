@@ -35,9 +35,10 @@
 
     <main>
         <ul class="opciones-admin">
-            <li><a href="{{ url_for('crear_producto') }}">Crear Productos</a></li>
-            <li><a href="{{ url_for('listar_productos_para_editar') }}">Editar Productos</a></li>
-            <li><a href="{{ url_for('admin_solicitudes') }}">Solicitudes</a></li>
+            <li><a href="{{ url_for('crear_producto') }}"><i class="fa-solid fa-box-open"></i> Crear Productos</a></li>
+            <li><a href="{{ url_for('listar_productos_para_editar') }}"><i class="fa-solid fa-pen-to-square"></i> Editar Productos</a></li>
+            <li><a href="{{ url_for('admin_solicitudes') }}"><i class="fa-solid fa-inbox"></i> Solicitudes</a></li>
+            <li><a href="{{ url_for('admin_estadisticas') }}"><i class="fa-solid fa-chart-column"></i> Estadísticas</a></li>
         </ul>
     </main>
 

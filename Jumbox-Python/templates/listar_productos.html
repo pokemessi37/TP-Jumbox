@@ -25,7 +25,7 @@
         </div>
     
         <div class="titulo-header">
-            <h1>Seleccione Producto</h1>
+            <h1>Editar Productos</h1>
         </div>
     
         <div class="cuenta" tabindex="0">
@@ -63,7 +63,7 @@
                         <td>{{ p.stock }}</td>
                         <td>
                             <a class="boton-editar" href="{{ url_for('editar_producto', id_producto=p.id_producto) }}">Editar</a>
-                            <form action="{{ url_for('eliminar_producto', id_producto=p['id_producto']) }}" method="POST" style="display:inline;">
+                            <form action="{{ url_for('editar_producto', id_producto=p['id_producto']) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="boton-borrar">Borrar</button>
                             </form>
                         </td>

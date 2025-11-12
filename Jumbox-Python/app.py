@@ -121,8 +121,8 @@ def listar_sucursales(conn):
     """Lista todas las sucursales (clientes tipo 'sucursal')."""
     return conn.execute("""
         SELECT id_cliente AS id, 
-               nombre AS nombre,
-               direccion AS direccion
+            nombre AS nombre,
+            direccion AS direccion
         FROM cliente
         WHERE tipo = 'sucursal'
         ORDER BY id_cliente
@@ -837,7 +837,7 @@ def admin_aprobar_solicitud(solicitud_id):
             """, (producto_id,)).fetchone()
             
             if not stock_global or stock_global['stock'] < cantidad:
-                flash("No hay suficiente stock global.", "error")
+                flash("No hay suficiente stock en el deposito.", "error")
                 return redirect(url_for('admin_solicitudes'))
             
             # Restar del stock global
@@ -867,7 +867,7 @@ def admin_aprobar_solicitud(solicitud_id):
             """, (solicitud_id,))
             
             conn.commit()
-            flash("Solicitud aprobada y stock transferido.", "success")
+            flash("Productos enviados correctamente", "success")
             
         except Exception as e:
             conn.rollback()
@@ -906,6 +906,64 @@ def admin_rechazar_solicitud(solicitud_id):
             flash(f"Error al rechazar solicitud: {e}", "error")
     
     return redirect(url_for('admin_solicitudes'))
+
+@app.route('/admin/estadisticas')
+def admin_estadisticas():
+    """Ver estadísticas de ventas por sucursal y totales."""
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    
+    if session.get('tipo') != 'admin':
+        flash("No autorizado.", "error")
+        return redirect(url_for('home'))
+    
+    with get_conn() as conn:
+        # Estadísticas por sucursal
+        estadisticas_sucursales = conn.execute("""
+            SELECT 
+                c.nombre AS sucursal,
+                COUNT(DISTINCT p.id_pedido) AS total_pedidos,
+                SUM(dp.cantidad) AS productos_vendidos,
+                SUM(dp.cantidad * pr.precio) AS total_ventas
+            FROM pedido p
+            JOIN cliente c ON c.id_cliente = p.fk_sucursal
+            JOIN detalles_pedido dp ON dp.fk_pedido = p.id_pedido
+            JOIN producto pr ON pr.id_producto = dp.fk_producto
+            WHERE c.tipo = 'sucursal'
+            GROUP BY c.id_cliente, c.nombre
+            ORDER BY total_ventas DESC
+        """).fetchall()
+        
+        # Estadísticas totales
+        estadisticas_totales = conn.execute("""
+            SELECT 
+                COUNT(DISTINCT p.id_pedido) AS total_pedidos,
+                SUM(dp.cantidad) AS productos_vendidos,
+                SUM(dp.cantidad * pr.precio) AS total_ventas
+            FROM pedido p
+            JOIN detalles_pedido dp ON dp.fk_pedido = p.id_pedido
+            JOIN producto pr ON pr.id_producto = dp.fk_producto
+        """).fetchone()
+        
+        # Productos más vendidos
+        productos_mas_vendidos = conn.execute("""
+            SELECT 
+                pr.nombre AS producto,
+                SUM(dp.cantidad) AS cantidad_vendida,
+                SUM(dp.cantidad * pr.precio) AS ingresos
+            FROM detalles_pedido dp
+            JOIN producto pr ON pr.id_producto = dp.fk_producto
+            GROUP BY pr.id_producto, pr.nombre
+            ORDER BY cantidad_vendida DESC
+            LIMIT 5
+        """).fetchall()
+    
+    return render_template('admin_estadisticas.html', 
+                        estadisticas_sucursales=estadisticas_sucursales,
+                        estadisticas_totales=estadisticas_totales,
+                        productos_mas_vendidos=productos_mas_vendidos)
+
 
 # ===============================================
 # GESTIÓN DE PRODUCTOS (ADMIN)
@@ -1053,23 +1111,6 @@ def editar_producto(id_producto):
 # ===============================================
 # PRODUCTOS (VISTA GENERAL)
 # ===============================================
-@app.get('/productos')
-def productos():
-    with get_conn() as conn:
-        categorias = listar_categorias(conn)
-        productos = conn.execute("""
-            SELECT
-                id_producto AS id,
-                nombre,
-                precio,
-                stock,
-                NULL  AS categoria,
-                0     AS stock_minimo,
-                1     AS activo
-            FROM producto
-            ORDER BY id_producto
-        """).fetchall()
-    return render_template('vista_productos.html', productos=productos, categorias=categorias)
 
 @app.post('/productos/editar')
 def productos_editar():
