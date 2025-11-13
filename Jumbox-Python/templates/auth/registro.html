@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Registrarse</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+    
+        <div class="titulo-header">
+            <h1>Registrarse</h1>
+        </div>
+    
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('login') }}">Iniciar Sesión</a></li>
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+            </ul>
+        </div>
+    </header>
+    <div class="formulario-container">
+        <form method="POST" action="{{ url_for('registro') }}">
+            <div>
+                <label for="nombre"><strong>Nombre</strong></label>
+                <input type="text" name="nombre"  value="{{ nombre or '' }}" required>
+            </div>
+            
+            <div>
+                <label for="tel"><strong>Telefono</strong></label>
+                <input type="number" name="tel"  value="{{ tel or '' }}" required>
+            </div>
+
+            <div>
+                <label for="direccion"><strong>Direccion</strong></label>
+                <input type="text" name="direccion"  value="{{ direccion or '' }}" required>
+            </div>
+            
+            <div>
+                <label for="contra"><strong>Contraseña</strong></label>
+                <input type="password" name="contra" required minlength="8">
+            </div>
+            
+            <div>
+                <label for="confirmar"><strong>Confirmar Contraseña</strong></label>
+                <input type="password" name="confirmar" required>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        
+            <button type="submit">Registrarse</button>
+        </form>
+    </div>
+</body>
+</html>

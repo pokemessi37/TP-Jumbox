@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Solicitudes de Stock</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+        <div class="titulo-header">
+            <h1>Solicitudes</h1>
+        </div>
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Mi Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <div class="mensajes-flash">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="solicitudes-container">
+            <div class="deposito-header">
+                <h2>Depósito</h2>
+            </div>
+
+            <div class="solicitudes-list">
+                {% if solicitudes %}
+                    {% for s in solicitudes %}
+                    <div class="solicitud-card">
+                        <div class="solicitud-info">
+                            <span class="solicitud-sucursal"><strong>De: {{ s['sucursal'] }}</strong></span>
+                            <span class="solicitud-producto">Producto: {{ s['producto'] }}</span>
+                            <span class="solicitud-stock">Stock: {{ s['cantidad'] }}</span>
+                        </div>
+                        <div class="solicitud-accion">
+                            <form method="POST" action="{{ url_for('admin_aprobar_solicitud', solicitud_id=s['id']) }}" style="display: inline;">
+                                <button type="submit" class="btn-enviar">
+                                    Enviar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="sin-solicitudes">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>No hay solicitudes pendientes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>

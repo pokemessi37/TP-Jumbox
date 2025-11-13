@@ -14,7 +14,6 @@ from datetime import date
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from dotenv import load_dotenv
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
@@ -1127,73 +1126,112 @@ def productos_desactivar(prod_id):
     flash(f"Desactivar producto {prod_id}: pendiente", "error")
     return redirect(url_for('productos'))
 
+
 # ===============================================
-# INICIALIZACIÓN
+# COMPRAS DEL CLIENTE
 # ===============================================
-def inicializar_base_datos():
-    """Inicializa datos básicos si no existen."""
-    try:
-        with get_conn() as conn:
-            # Verificar si existen sucursales (clientes tipo 'sucursal')
-            cursor = conn.execute("SELECT COUNT(*) as count FROM cliente WHERE tipo = 'sucursal'")
-            count = cursor.fetchone()['count']
+@app.route('/mis-compras')
+def mis_compras():
+    """Ver historial de compras del cliente."""
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    
+    if session.get('tipo') != 'usuario':
+        flash("No autorizado.", "error")
+        return redirect(url_for('home'))
+    
+    id_cliente = session['id_cliente']
+    
+    with get_conn() as conn:
+        # Obtener datos del cliente
+        cliente = conn.execute("""
+            SELECT nombre, direccion, telefono
+            FROM cliente
+            WHERE id_cliente = ?
+        """, (id_cliente,)).fetchone()
+        
+        # Obtener todos los pedidos del cliente con sus productos
+        pedidos = conn.execute("""
+            SELECT 
+                p.id_pedido,
+                p.fecha,
+                p.estado,
+                s.nombre AS sucursal,
+                GROUP_CONCAT(prod.nombre || '|' || dp.cantidad || '|' || prod.precio, '###') AS productos_info,
+                SUM(dp.cantidad * prod.precio) AS total
+            FROM pedido p
+            LEFT JOIN cliente s ON s.id_cliente = p.fk_sucursal
+            JOIN detalles_pedido dp ON dp.fk_pedido = p.id_pedido
+            JOIN producto prod ON prod.id_producto = dp.fk_producto
+            WHERE p.fk_cliente = ?
+            GROUP BY p.id_pedido
+            ORDER BY p.id_pedido DESC
+        """, (id_cliente,)).fetchall()
+        
+        # Procesar los productos de cada pedido
+        pedidos_procesados = []
+        for pedido in pedidos:
+            productos_raw = pedido['productos_info'].split('###') if pedido['productos_info'] else []
+            productos = []
+            for prod_info in productos_raw:
+                partes = prod_info.split('|')
+                if len(partes) == 3:
+                    productos.append({
+                        'nombre': partes[0],
+                        'cantidad': int(partes[1]),
+                        'precio': float(partes[2]),
+                        'subtotal': int(partes[1]) * float(partes[2])
+                    })
             
-            if count == 0:
-                print("📦 Creando sucursales de ejemplo...")
-                sucursales_ejemplo = [
-                    ('Sucursal Centro', 'Av. 18 de Julio 1234, Montevideo', '09876543', 'Sucursal1111'),
-                    ('Sucursal Pocitos', 'Av. Brasil 2845, Montevideo', '98765432', 'Sucursal2222'),
-                    ('Sucursal Carrasco', 'Av. Arocena 1567, Montevideo', '76543210', 'Sucursal3333')
-                ]
-                
-                for nombre_suc, direccion_suc, telefono, password in sucursales_ejemplo:
-                    hash_pass = bcrypt.generate_password_hash(password).decode('utf-8')
-                    cursor = conn.execute("""
-                        INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
-                        VALUES (?, ?, ?, ?, 'sucursal')
-                    """, (nombre_suc, direccion_suc, telefono, hash_pass))
-                    
-                    # Inicializar almacén de cada sucursal con todos los productos en 0
-                    sucursal_id = cursor.lastrowid
-                    conn.execute("""
-                        INSERT INTO almacen_sucursal (fk_sucursal, fk_producto, cantidad)
-                        SELECT ?, id_producto, 0
-                        FROM producto
-                    """, (sucursal_id,))
-                
-                conn.commit()
-                print(f"✅ {len(sucursales_ejemplo)} sucursales creadas")
-            
-            # Verificar si existe admin
-            cursor = conn.execute("SELECT COUNT(*) as count FROM cliente WHERE tipo = 'admin'")
-            count = cursor.fetchone()['count']
-            
-            if count == 0:
-                print("👤 Creando usuario admin de ejemplo...")
-                hash_pass = bcrypt.generate_password_hash('Admin1234').decode('utf-8')
-                conn.execute("""
-                    INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
-                    VALUES ('Admin', 'Av. Admin', '12345678', ?, 'admin')
-                """, (hash_pass,))
-                conn.commit()
-                print("✅ Usuario admin creado")
-            
-            # Verificar si existe usuario normal
-            cursor = conn.execute("SELECT COUNT(*) as count FROM cliente WHERE tipo = 'usuario'")
-            count = cursor.fetchone()['count']
-            
-            if count == 0:
-                print("👤 Creando usuario normal de ejemplo...")
-                hash_pass = bcrypt.generate_password_hash('Usuario1234').decode('utf-8')
-                conn.execute("""
-                    INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
-                    VALUES ('Juan', 'Av. Usuario', '87654321', ?, 'usuario')
-                """, (hash_pass,))
-                conn.commit()
-                print("✅ Usuario normal creado")
-                
-    except Exception as e:
-        print(f"⚠️ Error al inicializar base de datos: {e}")
+            pedidos_procesados.append({
+                'id_pedido': pedido['id_pedido'],
+                'fecha': pedido['fecha'],
+                'estado': pedido['estado'],
+                'sucursal': pedido['sucursal'],
+                'total': pedido['total'],
+                'productos': productos
+            })
+    
+    return render_template('compras_cliente.html', 
+                         cliente=cliente,
+                         pedidos=pedidos_procesados)
+
+@app.route('/actualizar-direccion', methods=['POST'])
+def actualizar_direccion():
+    """Actualizar la dirección del cliente."""
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    
+    if session.get('tipo') != 'usuario':
+        flash("No autorizado.", "error")
+        return redirect(url_for('home'))
+    
+    id_cliente = session['id_cliente']
+    nueva_direccion = request.form.get('direccion', '').strip()
+    
+    if not nueva_direccion:
+        flash("La dirección no puede estar vacía.", "error")
+        return redirect(url_for('mis_compras'))
+    
+    with get_conn() as conn:
+        try:
+            conn.execute("""
+                UPDATE cliente
+                SET direccion = ?
+                WHERE id_cliente = ?
+            """, (nueva_direccion, id_cliente))
+            conn.commit()
+            flash("Dirección actualizada correctamente.", "success")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error al actualizar dirección: {e}", "error")
+    
+    return redirect(url_for('mis_compras'))
+
+
+
 
 # ===============================================
 # MAIN

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Administración</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+    
+        <div class="titulo-header">
+            <h1>Editar Productos</h1>
+        </div>
+    
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+<main>
+    <div class="tabla-container">
+        <h2 style="text-align:center; margin-bottom:15px;">Lista de Productos</h2>
+
+        <table class="tabla-productos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in productos %}
+                    <tr>
+                        <td>{{ p.id_producto }}</td>
+                        <td>{{ p.nombre }}</td>
+                        <td>${{ p.precio }}</td>
+                        <td>{{ p.stock }}</td>
+                        <td>
+                            <a class="boton-editar" href="{{ url_for('editar_producto', id_producto=p.id_producto) }}">Editar</a>
+                            <form action="{{ url_for('editar_producto', id_producto=p['id_producto']) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="boton-borrar">Borrar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
+</body>
+</html>

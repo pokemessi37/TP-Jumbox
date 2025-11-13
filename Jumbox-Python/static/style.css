@@ -1774,3 +1774,404 @@ ESTADÍSTICAS - ADMIN
         min-width: 100%;
     }
 }
+
+
+/* =====================================
+MIS COMPRAS - CLIENTE
+===================================== */
+.compras-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Sección de Dirección */
+.direccion-section {
+    margin-bottom: 40px;
+}
+
+.card-direccion {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-direccion h2 {
+    margin: 0 0 25px 0;
+    color: #333;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.card-direccion h2 i {
+    color: #07b407;
+}
+
+.direccion-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: #555;
+    min-width: 120px;
+}
+
+.info-row .valor {
+    color: #333;
+    flex: 1;
+}
+
+.btn-editar-direccion {
+    background-color: #07b407;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-editar-direccion:hover {
+    background-color: #06a306;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(7, 180, 7, 0.3);
+}
+
+.form-editar-direccion {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.form-editar-direccion .form-group {
+    margin-bottom: 15px;
+}
+
+.form-editar-direccion label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-editar-direccion input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.form-editar-direccion input[type="text"]:focus {
+    outline: none;
+    border-color: #07b407;
+    box-shadow: 0 0 0 2px rgba(7, 180, 7, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-guardar,
+.btn-cancelar {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-guardar {
+    background-color: #07b407;
+    color: white;
+}
+
+.btn-guardar:hover {
+    background-color: #06a306;
+}
+
+.btn-cancelar {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-cancelar:hover {
+    background-color: #5a6268;
+}
+
+/* Historial de Compras */
+.historial-section {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.historial-section h2 {
+    margin: 0 0 25px 0;
+    color: #333;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.historial-section h2 i {
+    color: #07b407;
+}
+
+.pedidos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pedido-item {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.pedido-item:hover {
+    border-color: #07b407;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pedido-header {
+    padding: 20px;
+    background: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pedido-header:hover {
+    background: #e9ecef;
+}
+
+.pedido-info-principal {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.pedido-fecha {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 14px;
+}
+
+.pedido-fecha i {
+    color: #07b407;
+}
+
+.pedido-numero {
+    font-size: 16px;
+    color: #333;
+}
+
+.pedido-sucursal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 14px;
+}
+
+.pedido-sucursal i {
+    color: #07b407;
+}
+
+.pedido-info-secundaria {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.pedido-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.label-total {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.valor-total {
+    font-size: 20px;
+    font-weight: 700;
+    color: #07b407;
+}
+
+.pedido-estado .estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pedido-toggle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.pedido-toggle i {
+    color: #07b407;
+    font-size: 16px;
+}
+
+.pedido-detalles {
+    padding: 25px;
+    background: white;
+    border-top: 2px solid #e0e0e0;
+}
+
+.pedido-detalles h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.tabla-productos-pedido {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-productos-pedido thead {
+    background: #f8f9fa;
+}
+
+.tabla-productos-pedido th,
+.tabla-productos-pedido td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-productos-pedido th {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #555;
+    font-weight: 600;
+}
+
+.tabla-productos-pedido tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.tabla-productos-pedido tfoot td {
+    padding: 15px 12px;
+    border-top: 2px solid #e0e0e0;
+    border-bottom: none;
+}
+
+.total-pedido {
+    color: #07b407;
+    font-size: 18px;
+}
+
+.sin-compras {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.sin-compras i {
+    font-size: 72px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.sin-compras p {
+    font-size: 18px;
+    color: #999;
+    margin-bottom: 25px;
+}
+
+.acciones-footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pedido-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .pedido-info-principal,
+    .pedido-info-secundaria {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .pedido-total {
+        align-items: flex-start;
+    }
+    
+    .tabla-productos-pedido {
+        font-size: 14px;
+    }
+    
+    .tabla-productos-pedido th,
+    .tabla-productos-pedido td {
+        padding: 8px;
+    }
+}

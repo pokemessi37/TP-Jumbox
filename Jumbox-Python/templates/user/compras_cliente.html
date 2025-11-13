@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Mis Compras</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+        <div class="titulo-header">
+            <h1>Mis Compras</h1>
+        </div>
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>{{ session.get('nombre', 'Usuario') }}</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('mis_compras') }}">Mis Compras</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <div class="mensajes-flash">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="compras-container">
+            <!-- Sección de Dirección -->
+            <div class="direccion-section">
+                <div class="card-direccion">
+                    <h2><i class="fa-solid fa-location-dot"></i> Mi Dirección de Envío</h2>
+                    
+                    <div class="direccion-info">
+                        <div class="info-row">
+                            <span class="label">Nombre:</span>
+                            <span class="valor">{{ cliente['nombre'] }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Teléfono:</span>
+                            <span class="valor">{{ cliente['telefono'] }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Dirección:</span>
+                            <span class="valor" id="direccionActual">{{ cliente['direccion'] }}</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-editar-direccion" onclick="toggleEditarDireccion()">
+                        <i class="fa-solid fa-pen-to-square"></i> Editar Dirección
+                    </button>
+
+                    <div class="form-editar-direccion" id="formEditarDireccion" style="display: none;">
+                        <form method="POST" action="{{ url_for('actualizar_direccion') }}">
+                            <div class="form-group">
+                                <label for="direccion">Nueva Dirección:</label>
+                                <input type="text" 
+                                    id="direccion" 
+                                    name="direccion" 
+                                    value="{{ cliente['direccion'] }}" 
+                                    required
+                                    placeholder="Ej: Av. 18 de Julio 1234, Montevideo">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-guardar">
+                                    <i class="fa-solid fa-check"></i> Guardar
+                                </button>
+                                <button type="button" class="btn-cancelar" onclick="toggleEditarDireccion()">
+                                    <i class="fa-solid fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Historial de Compras -->
+            <div class="historial-section">
+                <h2><i class="fa-solid fa-shopping-bag"></i> Historial de Compras</h2>
+                
+                {% if pedidos %}
+                    <div class="pedidos-lista">
+                        {% for pedido in pedidos %}
+                        <div class="pedido-item">
+                            <div class="pedido-header" data-id="{{ pedido['id_pedido'] }}" onclick="togglePedido(this.dataset.id)">
+                                <div class="pedido-info-principal">
+                                    <div class="pedido-fecha">
+                                        <i class="fa-solid fa-calendar"></i>
+                                        <span>{{ pedido['fecha'] }}</span>
+                                    </div>
+                                    <div class="pedido-numero">
+                                        <strong>Pedido #{{ pedido['id_pedido'] }}</strong>
+                                    </div>
+                                    <div class="pedido-sucursal">
+                                        <i class="fa-solid fa-store"></i> {{ pedido['sucursal'] }}
+                                    </div>
+                                </div>
+                                
+                                <div class="pedido-info-secundaria">
+                                    <div class="pedido-total">
+                                        <span class="label-total">Total:</span>
+                                        <span class="valor-total">${{ "%.2f"|format(pedido['total']) }}</span>
+                                    </div>
+                                    
+                                    <div class="pedido-estado">
+                                        {% if pedido['estado'] == 'enviado' %}
+                                            <span class="estado-badge enviado">
+                                                <i class="fa-solid fa-truck"></i> Enviado
+                                            </span>
+                                        {% elif pedido['estado'] == 'pendiente' %}
+                                            <span class="estado-badge pendiente">
+                                                <i class="fa-solid fa-clock"></i> Pendiente
+                                            </span>
+                                        {% else %}
+                                            <span class="estado-badge pendiente">
+                                                <i class="fa-solid fa-clock"></i> {{ pedido['estado']|capitalize }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="pedido-toggle">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pedido-detalles" id="detalles-{{ pedido['id_pedido'] }}" style="display: none;">
+                                <h4>Productos del pedido:</h4>
+                                <table class="tabla-productos-pedido">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th class="center">Cantidad</th>
+                                            <th class="right">Precio Unit.</th>
+                                            <th class="right">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for producto in pedido['productos'] %}
+                                        <tr>
+                                            <td>{{ producto['nombre'] }}</td>
+                                            <td class="center">{{ producto['cantidad'] }}</td>
+                                            <td class="right">${{ "%.2f"|format(producto['precio']) }}</td>
+                                            <td class="right">${{ "%.2f"|format(producto['subtotal']) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="right"><strong>Total:</strong></td>
+                                            <td class="right total-pedido"><strong>${{ "%.2f"|format(pedido['total']) }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="sin-compras">
+                        <i class="fa-solid fa-shopping-cart"></i>
+                        <p>Aún no has realizado ninguna compra</p>
+                        <a href="{{ url_for('home') }}" class="btn primary">
+                            <i class="fa-solid fa-shopping-bag"></i> Ir a Comprar
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Botón Volver -->
+            <div class="acciones-footer">
+                <a href="{{ url_for('home') }}" class="btn-volver">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a la Tienda
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        function toggleEditarDireccion() {
+            const form = document.getElementById('formEditarDireccion');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function togglePedido(pedidoId) {
+            const detalles = document.getElementById('detalles-' + pedidoId);
+            const icon = detalles.previousElementSibling.querySelector('.pedido-toggle i');
+            
+            if (detalles.style.display === 'none') {
+                detalles.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                detalles.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+    </script>
+</body>
+</html>
