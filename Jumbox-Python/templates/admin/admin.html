@@ -11,7 +11,7 @@
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="{{ url_for('home') }}">
+            <a href="{{ url_for('main.home') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
@@ -27,18 +27,18 @@
                 <i class="fa-solid fa-chevron-down"></i>
             </div>
             <ul class="menu-cuenta" aria-hidden="true">
-                <li><a href="{{ url_for('admin') }}">Admin</a></li>
-                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                <li><a href="{{ url_for('admin.admin') }}">Admin</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
             </ul>
         </div>
     </header>
 
     <main>
         <ul class="opciones-admin">
-            <li><a href="{{ url_for('crear_producto') }}"><i class="fa-solid fa-box-open"></i> Crear Productos</a></li>
-            <li><a href="{{ url_for('listar_productos_para_editar') }}"><i class="fa-solid fa-pen-to-square"></i> Editar Productos</a></li>
-            <li><a href="{{ url_for('admin_solicitudes') }}"><i class="fa-solid fa-inbox"></i> Solicitudes</a></li>
-            <li><a href="{{ url_for('admin_estadisticas') }}"><i class="fa-solid fa-chart-column"></i> Estadísticas</a></li>
+            <li><a href="{{ url_for('admin.crear_producto') }}"><i class="fa-solid fa-box-open"></i> Crear Productos</a></li>
+            <li><a href="{{ url_for('admin.listar_productos_para_editar') }}"><i class="fa-solid fa-pen-to-square"></i> Editar Productos</a></li>
+            <li><a href="{{ url_for('admin.admin_solicitudes') }}"><i class="fa-solid fa-inbox"></i> Solicitudes</a></li>
+            <li><a href="{{ url_for('admin.admin_estadisticas') }}"><i class="fa-solid fa-chart-column"></i> Estadísticas</a></li>
         </ul>
     </main>
 

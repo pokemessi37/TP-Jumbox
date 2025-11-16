@@ -12,7 +12,7 @@
 
   <header class="main-header">
     <div class="logo">
-        <a href="{{ url_for('home') }}">
+        <a href="{{ url_for('main.home') }}">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
         </a>
     </div>
@@ -25,7 +25,7 @@
       </div>
       <ul class="menu-desplegable" aria-hidden="true">
           <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
-              <a href="{{ url_for('home') }}">Todos</a>
+              <a href="{{ url_for('main.home') }}">Todos</a>
           </li>
           {% for categoria in categorias or [] %}
           <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
@@ -49,24 +49,24 @@
           {% if session.get('id_cliente') %}
           {% if session.get('tipo') == 'admin' %}
               <!-- Opciones exclusivas del admin -->
-              <li><a href="{{ url_for('admin') }}">Admin</a></li>
-              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+              <li><a href="{{ url_for('admin.admin') }}">Admin</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
       
           {% elif session.get('tipo') == 'sucursal' %}
               <!-- Opciones para usuarios de tipo sucursal -->
-              <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
-              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+              <li><a href="{{ url_for('sucursal.panel_sucursal') }}">Panel Sucursal</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
       
           {% else %}
               <!-- Opciones para usuarios comunes -->
-              <li><a href="{{ url_for('mis_compras') }}">Mis Compras</a></li>
-              <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+              <li><a href="{{ url_for('user.mis_compras') }}">Mis Compras</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
           {% endif %}
       
       {% else %}
           <!-- Opciones para visitantes -->
-          <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
-          <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+          <li><a href="{{ url_for('auth.registro') }}">Registrarse</a></li>
+          <li><a href="{{ url_for('auth.login') }}">Iniciar sesión</a></li>
       {% endif %}
         </ul>
     </div>
@@ -115,7 +115,7 @@
             </td>
             <td class="right">${{ '%.2f'|format(it.precio) }}</td>
             <td class="center">
-              <form method="post" action="{{ url_for('carrito_actualizar_item') }}">
+              <form method="post" action="{{ url_for('user.carrito_actualizar_item') }}">
                 <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
                 <input type="number" name="cantidad" min="1" step="1" value="{{ it.cantidad }}" style="width:90px">
                 <button class="btn">Actualizar</button>
@@ -123,7 +123,7 @@
             </td>
             <td class="right">${{ '%.2f'|format(it.subtotal) }}</td>
             <td class="right">
-              <form method="post" action="{{ url_for('carrito_eliminar_item') }}">
+              <form method="post" action="{{ url_for('user.carrito_eliminar_item') }}">
                 <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
                 <button class="btn danger">Eliminar</button>
               </form>
@@ -148,7 +148,7 @@
   <!-- Checkout -->
   <section class="card">
     <h3>Finalizar compra</h3>
-    <form method="post" action="{{ url_for('carrito_checkout') }}" class="grid">
+    <form method="post" action="{{ url_for('user.carrito_checkout') }}" class="grid">
       <div>
         <label>Método de pago</label>
         <select name="metodo_pago" required>

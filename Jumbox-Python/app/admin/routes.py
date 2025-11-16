@@ -1,84 +1,27 @@
-from flask import Blueprint
-import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-import sqlite3
-import base64
-from flask_bcrypt import Bcrypt
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from app.utils import (get_conn, require_login_redirect, listar_categorias, allowed_file)
 
-from dotenv import load_dotenv
-import os
+admin_bp = Blueprint('admin', __name__)
 
-# Cargar las variables desde .env
-load_dotenv()
-
-from datetime import date
-from google_auth_oauthlib.flow import Flow
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-main = Blueprint("main", __name__)
-
-
-load_dotenv()
-app = Flask(__name__)
-app.secret_key = 'clave_secreta_super_segura'
-#app.secret_key = os.environ.get("FLASK_SECRET_KEY")
-bcrypt = Bcrypt(app)
-DB_NAME = "jumbox.db"
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "http://127.0.0.1:5000/auth/callback"
-flow = Flow.from_client_config(
-    client_config={
-        "web": {
-            "client_id": GOOGLE_CLIENT_ID,
-            "client_secret": GOOGLE_CLIENT_SECRET,
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": [REDIRECT_URI],
-        }
-    },
-    scopes=[
-        "openid",
-        #"https://www.googleapis.com/auth/user.phonenumbers.read",
-        "https://www.googleapis.com/auth/userinfo.profile"
-        ],
-    redirect_uri=REDIRECT_URI
-)
-
-
-
-# ===============================================
-# PANEL ADMIN
-# ===============================================
-@main.route('/administracion')
+@admin_bp.route('/administracion')
 def admin():
     resp = require_login_redirect()
     if resp:
         return resp
     if session.get('tipo') != 'admin':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     return render_template('admin.html')
 
-
-@main.route('/admin/solicitudes')
+@admin_bp.route('/admin/solicitudes')
 def admin_solicitudes():
-    """Ver todas las solicitudes de reposición."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'admin':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     with get_conn() as conn:
         solicitudes = conn.execute("""
@@ -100,16 +43,15 @@ def admin_solicitudes():
     
     return render_template('admin_solicitudes.html', solicitudes=solicitudes)
 
-@main.route('/admin/solicitudes/aprobar/<int:solicitud_id>', methods=['POST'])
+@admin_bp.route('/admin/solicitudes/aprobar/<int:solicitud_id>', methods=['POST'])
 def admin_aprobar_solicitud(solicitud_id):
-    """Aprobar una solicitud y transferir stock a la sucursal."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'admin':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     with get_conn() as conn:
         try:
@@ -126,7 +68,7 @@ def admin_aprobar_solicitud(solicitud_id):
             
             if not solicitud:
                 flash("Solicitud no encontrada.", "error")
-                return redirect(url_for('admin_solicitudes'))
+                return redirect(url_for('admin.admin_solicitudes'))
             
             cliente_sucursal_id = solicitud['fk_sucursal']
             producto_id = solicitud['fk_producto']
@@ -138,16 +80,14 @@ def admin_aprobar_solicitud(solicitud_id):
             
             if not stock_global or stock_global['stock'] < cantidad:
                 flash("No hay suficiente stock en el deposito.", "error")
-                return redirect(url_for('admin_solicitudes'))
+                return redirect(url_for('admin.admin_solicitudes'))
             
-            # Restar del stock global
             conn.execute("""
                 UPDATE producto 
                 SET stock = stock - ? 
                 WHERE id_producto = ?
             """, (cantidad, producto_id))
             
-            # Sumar al almacén de la sucursal
             conn.execute("""
                 INSERT INTO almacen_sucursal (fk_sucursal, fk_producto, cantidad)
                 VALUES (?, ?, ?)
@@ -155,7 +95,6 @@ def admin_aprobar_solicitud(solicitud_id):
                 DO UPDATE SET cantidad = cantidad + ?
             """, (cliente_sucursal_id, producto_id, cantidad, cantidad))
             
-            # Eliminar la solicitud
             conn.execute("""
                 DELETE FROM detalle_pedido_reposicion 
                 WHERE fk_pedido_reposicion = ?
@@ -173,18 +112,17 @@ def admin_aprobar_solicitud(solicitud_id):
             conn.rollback()
             flash(f"Error al aprobar solicitud: {e}", "error")
     
-    return redirect(url_for('admin_solicitudes'))
+    return redirect(url_for('admin.admin_solicitudes'))
 
-@main.route('/admin/solicitudes/rechazar/<int:solicitud_id>', methods=['POST'])
+@admin_bp.route('/admin/solicitudes/rechazar/<int:solicitud_id>', methods=['POST'])
 def admin_rechazar_solicitud(solicitud_id):
-    """Rechazar y eliminar una solicitud."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'admin':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     with get_conn() as conn:
         try:
@@ -205,21 +143,19 @@ def admin_rechazar_solicitud(solicitud_id):
             conn.rollback()
             flash(f"Error al rechazar solicitud: {e}", "error")
     
-    return redirect(url_for('admin_solicitudes'))
+    return redirect(url_for('admin.admin_solicitudes'))
 
-@main.route('/admin/estadisticas')
+@admin_bp.route('/admin/estadisticas')
 def admin_estadisticas():
-    """Ver estadísticas de ventas por sucursal y totales."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'admin':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     with get_conn() as conn:
-        # Estadísticas por sucursal
         estadisticas_sucursales = conn.execute("""
             SELECT 
                 c.nombre AS sucursal,
@@ -235,7 +171,6 @@ def admin_estadisticas():
             ORDER BY total_ventas DESC
         """).fetchall()
         
-        # Estadísticas totales
         estadisticas_totales = conn.execute("""
             SELECT 
                 COUNT(DISTINCT p.id_pedido) AS total_pedidos,
@@ -246,7 +181,6 @@ def admin_estadisticas():
             JOIN producto pr ON pr.id_producto = dp.fk_producto
         """).fetchone()
         
-        # Productos más vendidos
         productos_mas_vendidos = conn.execute("""
             SELECT 
                 pr.nombre AS producto,
@@ -264,11 +198,7 @@ def admin_estadisticas():
                         estadisticas_totales=estadisticas_totales,
                         productos_mas_vendidos=productos_mas_vendidos)
 
-
-# ===============================================
-# GESTIÓN DE PRODUCTOS (ADMIN)
-# ===============================================
-@main.route('/crear-producto', methods=['GET', 'POST'])
+@admin_bp.route('/crear-producto', methods=['GET', 'POST'])
 def crear_producto():
     resp = require_login_redirect()
     if resp:
@@ -282,14 +212,14 @@ def crear_producto():
 
         if not nombre or not precio or not stock or not categoria:
             flash('Todos los campos son obligatorios', 'error')
-            return redirect(url_for('crear_producto'))
+            return redirect(url_for('admin.crear_producto'))
 
         try:
             precio = float(precio)
             stock = int(stock)
         except ValueError:
             flash('Precio y stock deben ser números válidos', 'error')
-            return redirect(url_for('crear_producto'))
+            return redirect(url_for('admin.crear_producto'))
 
         imagen_data = None
         if 'imagen' in request.files:
@@ -299,13 +229,13 @@ def crear_producto():
                     imagen_data = file.read()
                 else:
                     flash('Formato de imagen no permitido', 'error')
-                    return redirect(url_for('crear_producto'))
+                    return redirect(url_for('admin.crear_producto'))
 
         with get_conn() as conn:
             cat_row = conn.execute("SELECT id_categoria FROM categoria WHERE nombre = ?", (categoria,)).fetchone()
             if not cat_row:
                 flash('Categoría no válida', 'error')
-                return redirect(url_for('crear_producto'))
+                return redirect(url_for('admin.crear_producto'))
 
             fk_categoria = cat_row['id_categoria']
 
@@ -316,14 +246,14 @@ def crear_producto():
             conn.commit()
 
         flash('Producto creado exitosamente', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     with get_conn() as conn:
         categorias = listar_categorias(conn)
 
     return render_template('crear_producto.html', categorias=categorias)
 
-@main.route('/editar-productos')
+@admin_bp.route('/editar-productos')
 def listar_productos_para_editar():
     resp = require_login_redirect()
     if resp:
@@ -333,7 +263,7 @@ def listar_productos_para_editar():
         productos = conn.execute("SELECT id_producto, nombre, precio, stock FROM producto").fetchall()
     return render_template('listar_productos.html', productos=productos)
 
-@main.route('/editar-producto/<int:id_producto>', methods=['GET', 'POST'])
+@admin_bp.route('/editar-producto/<int:id_producto>', methods=['GET', 'POST'])
 def editar_producto(id_producto):
     resp = require_login_redirect()
     if resp:
@@ -351,7 +281,7 @@ def editar_producto(id_producto):
 
         if not producto:
             flash('Producto no encontrado', 'error')
-            return redirect(url_for('home'))
+            return redirect(url_for('main.home'))
 
     if request.method == 'POST':
         nombre = request.form.get('nombre')
@@ -361,14 +291,14 @@ def editar_producto(id_producto):
 
         if not nombre or not precio or not stock or not categoria:
             flash('Todos los campos son obligatorios', 'error')
-            return redirect(url_for('editar_producto', id_producto=id_producto))
+            return redirect(url_for('admin.editar_producto', id_producto=id_producto))
 
         try:
             precio = float(precio)
             stock = int(stock)
         except ValueError:
             flash('Precio y stock deben ser números válidos', 'error')
-            return redirect(url_for('editar_producto', id_producto=id_producto))
+            return redirect(url_for('admin.editar_producto', id_producto=id_producto))
 
         imagen_data = None
         if 'imagen' in request.files:
@@ -378,13 +308,13 @@ def editar_producto(id_producto):
                     imagen_data = file.read()
                 else:
                     flash('Formato de imagen no permitido', 'error')
-                    return redirect(url_for('editar_producto', id_producto=id_producto))
+                    return redirect(url_for('admin.editar_producto', id_producto=id_producto))
 
         with get_conn() as conn:
             cat_row = conn.execute("SELECT id_categoria FROM categoria WHERE nombre = ?", (categoria,)).fetchone()
             if not cat_row:
                 flash('Categoría no válida', 'error')
-                return redirect(url_for('editar_producto', id_producto=id_producto))
+                return redirect(url_for('admin.editar_producto', id_producto=id_producto))
 
             fk_categoria = cat_row['id_categoria']
 
@@ -404,6 +334,21 @@ def editar_producto(id_producto):
             conn.commit()
 
         flash('Producto actualizado correctamente', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     return render_template('editar_producto.html', categorias=categorias, producto=producto)
+
+@admin_bp.post('/productos/editar')
+def productos_editar():
+    flash("Editar producto: pendiente de implementar", "error")
+    return redirect(url_for('admin.productos'))
+
+@admin_bp.post('/productos/<int:prod_id>/activar')
+def productos_activar(prod_id):
+    flash(f"Activar producto {prod_id}: pendiente", "error")
+    return redirect(url_for('admin.productos'))
+
+@admin_bp.post('/productos/<int:prod_id>/desactivar')
+def productos_desactivar(prod_id):
+    flash(f"Desactivar producto {prod_id}: pendiente", "error")
+    return redirect(url_for('admin.productos'))

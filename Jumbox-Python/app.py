@@ -306,9 +306,9 @@ def login():
             
             # Redirigir según tipo de usuario
             if cliente[3] == 'sucursal':
-                return redirect(url_for('panel_sucursal'))
+                return redirect(url_for('sucursal.panel_sucursal'))
             elif cliente[3] == 'admin':
-                return redirect(url_for('admin'))
+                return redirect(url_for('admin.admin'))
             else:
                 return redirect(url_for('home'))
 

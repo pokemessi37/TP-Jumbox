@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <title>Almacén Sucursal</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('main.home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+        <div class="titulo-header">
+            <h1>Almacén - {{ sucursal['nombre'] if sucursal else 'Sucursal' }}</h1>
+        </div>
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> 
+                <span>Cuenta</span> 
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('sucursal.panel_sucursal') }}">Panel Sucursal</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <div class="mensajes-flash">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="contenedor">
+            {% if sucursal %}
+            <div class="card">
+                <h3><i class="fa-solid fa-store"></i> {{ sucursal['nombre'] }}</h3>
+                <p><i class="fa-solid fa-location-dot"></i> {{ sucursal['direccion'] or 'Sin dirección' }}</p>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <h2>Stock de Productos</h2>
+                <div class="tabla-wrapper">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th class="right">Precio</th>
+                                <th class="center">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if productos %}
+                                {% for p in productos %}
+                                <tr class="{{ 'fila-inactiva' if p['stock_sucursal'] == 0 }}">
+                                    <td>#{{ p['id'] }}</td>
+                                    <td>{{ p['nombre'] }}</td>
+                                    <td><span class="pill">{{ p['categoria'] }}</span></td>
+                                    <td class="right">${{ "%.2f"|format(p['precio']) }}</td>
+                                    <td class="center">
+                                        {% if p['stock_sucursal'] > 0 %}
+                                            <span class="pill ok">{{ p['stock_sucursal'] }}</span>
+                                        {% else %}
+                                            <span class="pill off">0</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="center">No hay productos en el almacén.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="acciones" style="margin-top: 20px;">
+                <a href="{{ url_for('sucursal.sucursal_pedir_stock') }}" class="btn primary">
+                    <i class="fa-solid fa-box"></i> Pedir Stock
+                </a>
+                <a href="{{ url_for('sucursal.panel_sucursal') }}" class="btn">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>

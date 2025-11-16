@@ -1,9 +1,38 @@
-from flask import Blueprint
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import sqlite3
+import os
+from google_auth_oauthlib.flow import Flow
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from app import bcrypt
+from app.utils import get_conn
 
+auth_bp = Blueprint('auth', __name__)
 
-main = Blueprint("main", __name__)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-@main.route('/registro', methods=['GET', 'POST'])
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+REDIRECT_URI = "http://127.0.0.1:5000/auth/callback"
+
+flow = Flow.from_client_config(
+    client_config={
+        "web": {
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [REDIRECT_URI],
+        }
+    },
+    scopes=[
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.profile"
+    ],
+    redirect_uri=REDIRECT_URI
+)
+
+@auth_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -19,7 +48,7 @@ def registro():
         hash_contra = bcrypt.generate_password_hash(contra).decode('utf-8')
 
         try:
-            conn = sqlite3.connect(DB_NAME)
+            conn = sqlite3.connect("jumbox.db")
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
@@ -29,20 +58,20 @@ def registro():
             conn.close()
 
             flash("Registro exitoso", "success")
-            return redirect(url_for('login'))
+            return redirect(url_for('auth.login'))
         except sqlite3.IntegrityError:
             flash("El telefono ya está registrado", "error")
-            return redirect(url_for('registro'))
+            return redirect(url_for('auth.registro'))
 
     return render_template('registro.html')
 
-@main.route('/login', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         tel = request.form['tel']
         contra = request.form['contra']
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect("jumbox.db")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id_cliente, nombre, contrasena, tipo
@@ -59,26 +88,25 @@ def login():
             
             flash("Inicio de sesión exitoso", "success")
             
-            # Redirigir según tipo de usuario
             if cliente[3] == 'sucursal':
-                return redirect(url_for('panel_sucursal'))
+                return redirect(url_for('sucursal.panel_sucursal'))
             elif cliente[3] == 'admin':
-                return redirect(url_for('admin'))
+                return redirect(url_for('admin.admin'))
             else:
-                return redirect(url_for('home'))
+                return redirect(url_for('main.home'))
 
         flash("Credenciales incorrectas", "error")
         return render_template('login.html', tel=tel)
 
     return render_template('login.html')
 
-@main.route("/logingoogle")
+@auth_bp.route("/logingoogle")
 def logingoogle():
     authorization_url, state = flow.authorization_url()
     session["state"] = state
     return redirect(authorization_url)
 
-@main.route("/auth/callback")
+@auth_bp.route("/auth/callback")
 def callback():
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
@@ -96,9 +124,9 @@ def callback():
     if not phone_number:
         session["google_temp_id"] = id_info.get("sub")
         session["nombre_google"] = nombre_google
-        return redirect(url_for("pedir_telefono"))
+        return redirect(url_for("auth.pedir_telefono"))
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect("jumbox.db")
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (phone_number,))
@@ -120,10 +148,9 @@ def callback():
     session["tipo"] = cliente[3]
 
     flash("Inicio de sesión exitoso", "success")
-    return redirect(url_for("home"))
+    return redirect(url_for("main.home"))
 
-
-@main.route("/pedir-telefono", methods=["GET", "POST"])
+@auth_bp.route("/pedir-telefono", methods=["GET", "POST"])
 def pedir_telefono():
     if request.method == "POST":
         telefono = request.form["telefono"]
@@ -132,24 +159,21 @@ def pedir_telefono():
 
         if not google_id:
             flash("Error: sesión de Google no válida.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect("jumbox.db")
         cursor = conn.cursor()
 
-        # Verificamos si el teléfono ya existe
         cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (telefono,))
         cliente = cursor.fetchone()
 
         if cliente:
-            # Si ya existe, verificamos si el nombre coincide
             nombre_existente = cliente[1]
             if nombre_existente != nombre_google:
                 conn.close()
                 flash("El número de teléfono ya está asociado a otra cuenta. Las credenciales no coinciden.", "error")
-                return redirect(url_for("login"))
+                return redirect(url_for("auth.login"))
         else:
-            # Si no existe, creamos el usuario nuevo
             cursor.execute(
                 "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) VALUES (?, ?, ?, ?, ?)",
                 (nombre_google, "", telefono, "", "usuario")
@@ -160,19 +184,17 @@ def pedir_telefono():
 
         conn.close()
 
-        # Guardamos sesión
         session["id_cliente"] = cliente[0]
         session["nombre"] = cliente[1]
         session["tipo"] = cliente[3]
 
-
         flash("Inicio de sesión exitoso", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     return render_template("pedir_telefono.html")
 
-@main.route('/logout')
+@auth_bp.route('/logout')
 def logout():
     session.clear()
     flash('Sesión cerrada correctamente', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('main.home'))

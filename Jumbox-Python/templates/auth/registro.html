@@ -11,7 +11,7 @@
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="{{ url_for('home') }}">
+            <a href="{{ url_for('main.home') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
@@ -27,13 +27,13 @@
                 <i class="fa-solid fa-chevron-down"></i>
             </div>
             <ul class="menu-cuenta" aria-hidden="true">
-                <li><a href="{{ url_for('login') }}">Iniciar Sesión</a></li>
-                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('auth.login') }}">Iniciar Sesión</a></li>
+                <li><a href="{{ url_for('auth.registro') }}">Registrarse</a></li>
             </ul>
         </div>
     </header>
     <div class="formulario-container">
-        <form method="POST" action="{{ url_for('registro') }}">
+        <form method="POST" action="{{ url_for('auth.registro') }}">
             <div>
                 <label for="nombre"><strong>Nombre</strong></label>
                 <input type="text" name="nombre"  value="{{ nombre or '' }}" required>

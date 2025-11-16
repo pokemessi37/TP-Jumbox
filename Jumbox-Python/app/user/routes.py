@@ -1,13 +1,11 @@
-from flask import Blueprint
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from datetime import date
+from app.utils import (get_conn, require_login_redirect, ensure_carrito_abierto,
+                    leer_items, listar_sucursales, listar_categorias)
 
+user_bp = Blueprint('user', __name__)
 
-main = Blueprint("main", __name__)
-
-
-# ===============================================
-# CARRITO
-# ===============================================
-@main.get('/carrito')
+@user_bp.get('/carrito')
 def carrito():
     resp = require_login_redirect()
     if resp:
@@ -20,7 +18,7 @@ def carrito():
         sucursales = listar_sucursales(conn)
         if not sucursales:
             flash("No hay sucursales cargadas.", "error")
-            return redirect(url_for('home'))
+            return redirect(url_for('main.home'))
 
         if 'cliente_sucursal_id' not in session:
             session['cliente_sucursal_id'] = sucursales[0]['id']
@@ -42,7 +40,7 @@ def carrito():
         metodos_pago=['EFECTIVO', 'TARJETA']
     )
 
-@main.post('/carrito/items/update')
+@user_bp.post('/carrito/items/update')
 def carrito_actualizar_item():
     resp = require_login_redirect()
     if resp:
@@ -54,7 +52,7 @@ def carrito_actualizar_item():
 
     if not producto_id or not cantidad or cantidad < 1:
         flash("Cantidad inválida.", "error")
-        return redirect(url_for('carrito'))
+        return redirect(url_for('user.carrito'))
 
     with get_conn() as conn:
         car = ensure_carrito_abierto(conn, id_cliente)
@@ -78,9 +76,9 @@ def carrito_actualizar_item():
             """, (producto_id, car['id_carrito'], cantidad))
 
     flash("Carrito actualizado.", "success")
-    return redirect(url_for('carrito'))
+    return redirect(url_for('user.carrito'))
 
-@main.post('/carrito/items/remove')
+@user_bp.post('/carrito/items/remove')
 def carrito_eliminar_item():
     resp = require_login_redirect()
     if resp:
@@ -90,7 +88,7 @@ def carrito_eliminar_item():
     producto_id = request.form.get('producto_id', type=int)
     if not producto_id:
         flash("Producto inválido.", "error")
-        return redirect(url_for('carrito'))
+        return redirect(url_for('user.carrito'))
 
     with get_conn() as conn:
         car = ensure_carrito_abierto(conn, id_cliente)
@@ -100,9 +98,9 @@ def carrito_eliminar_item():
         """, (car['id_carrito'], producto_id))
 
     flash("Producto eliminado.", "success")
-    return redirect(url_for('carrito'))
+    return redirect(url_for('user.carrito'))
 
-@main.post('/carrito/checkout')
+@user_bp.post('/carrito/checkout')
 def carrito_checkout():
     resp = require_login_redirect()
     if resp:
@@ -112,7 +110,7 @@ def carrito_checkout():
 
     if metodo_pago not in ('EFECTIVO', 'TARJETA'):
         flash("Seleccioná un método de pago válido.", "error")
-        return redirect(url_for('carrito'))
+        return redirect(url_for('user.carrito'))
 
     id_cliente = session['id_cliente']
     cliente_sucursal_id = session.get('cliente_sucursal_id')
@@ -134,15 +132,13 @@ def carrito_checkout():
 
         if not items:
             flash("Tu carrito está vacío.", "error")
-            return redirect(url_for('carrito'))
+            return redirect(url_for('user.carrito'))
 
-        # Validar stock de la sucursal
         for it in items:
             if it['stock_sucursal'] < it['cantidad']:
                 flash(f"Stock insuficiente en la sucursal para uno o más productos.", "error")
-                return redirect(url_for('carrito'))
+                return redirect(url_for('user.carrito'))
 
-        # Crear pedido
         cursor = conn.execute("""
             INSERT INTO pedido (fecha, estado, fk_cliente, fk_sucursal)
             VALUES (?, 'pendiente', ?, ?)
@@ -150,54 +146,42 @@ def carrito_checkout():
         
         pedido_id = cursor.lastrowid
 
-        # Agregar detalles y descontar stock
         for it in items:
             conn.execute("""
                 INSERT INTO detalles_pedido (cantidad, fk_producto, fk_pedido)
                 VALUES (?, ?, ?)
             """, (it['cantidad'], it['producto_id'], pedido_id))
             
-            # Descontar del almacén de la sucursal
             conn.execute("""
                 UPDATE almacen_sucursal
                 SET cantidad = cantidad - ?
                 WHERE fk_sucursal = ? AND fk_producto = ?
             """, (it['cantidad'], cliente_sucursal_id, it['producto_id']))
 
-        # Vaciar carrito
         conn.execute("DELETE FROM producto_carrito WHERE fk_carrito=?", (car['id_carrito'],))
 
     flash("¡Compra confirmada!", "success")
-    return redirect(url_for('home'))
+    return redirect(url_for('main.home'))
 
-
-
-
-# ===============================================
-# COMPRAS DEL CLIENTE
-# ===============================================
-@main.route('/mis-compras')
+@user_bp.route('/mis-compras')
 def mis_compras():
-    """Ver historial de compras del cliente."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'usuario':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     id_cliente = session['id_cliente']
     
     with get_conn() as conn:
-        # Obtener datos del cliente
         cliente = conn.execute("""
             SELECT nombre, direccion, telefono
             FROM cliente
             WHERE id_cliente = ?
         """, (id_cliente,)).fetchone()
         
-        # Obtener todos los pedidos del cliente con sus productos
         pedidos = conn.execute("""
             SELECT 
                 p.id_pedido,
@@ -215,7 +199,6 @@ def mis_compras():
             ORDER BY p.id_pedido DESC
         """, (id_cliente,)).fetchall()
         
-        # Procesar los productos de cada pedido
         pedidos_procesados = []
         for pedido in pedidos:
             productos_raw = pedido['productos_info'].split('###') if pedido['productos_info'] else []
@@ -243,23 +226,22 @@ def mis_compras():
                          cliente=cliente,
                          pedidos=pedidos_procesados)
 
-@main.route('/actualizar-direccion', methods=['POST'])
+@user_bp.route('/actualizar-direccion', methods=['POST'])
 def actualizar_direccion():
-    """Actualizar la dirección del cliente."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'usuario':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     id_cliente = session['id_cliente']
     nueva_direccion = request.form.get('direccion', '').strip()
     
     if not nueva_direccion:
         flash("La dirección no puede estar vacía.", "error")
-        return redirect(url_for('mis_compras'))
+        return redirect(url_for('user.mis_compras'))
     
     with get_conn() as conn:
         try:
@@ -274,4 +256,4 @@ def actualizar_direccion():
             conn.rollback()
             flash(f"Error al actualizar dirección: {e}", "error")
     
-    return redirect(url_for('mis_compras'))
+    return redirect(url_for('user.mis_compras'))

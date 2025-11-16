@@ -11,7 +11,7 @@
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="{{ url_for('home') }}">
+            <a href="{{ url_for('main.home') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
@@ -24,7 +24,7 @@
             </div>
             <ul class="menu-desplegable" aria-hidden="true">
                 <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
-                    <a href="{{ url_for('home') }}">Todos</a>
+                    <a href="{{ url_for('main.home') }}">Todos</a>
                 </li>
                 {% for categoria in categorias or [] %}
                 <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
@@ -47,37 +47,37 @@
                 {% if session.get('id_cliente') %}
                 {% if session.get('tipo') == 'admin' %}
                     <!-- Opciones exclusivas del admin -->
-                    <li><a href="{{ url_for('admin') }}">Admin</a></li>
-                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                    <li><a href="{{ url_for('admin.admin') }}">Admin</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
             
                 {% elif session.get('tipo') == 'sucursal' %}
                     <!-- Opciones para usuarios de tipo sucursal -->
-                    <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
-                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                    <li><a href="{{ url_for('sucursal.panel_sucursal') }}">Panel Sucursal</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
             
                 {% else %}
                     <!-- Opciones para usuarios comunes -->
-                    <li><a href="{{ url_for('mis_compras') }}">Mis Compras</a></li>
-                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                    <li><a href="{{ url_for('user.mis_compras') }}">Mis Compras</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
                 {% endif %}
             
             {% else %}
                 <!-- Opciones para visitantes -->
-                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
-                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+                <li><a href="{{ url_for('auth.registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('auth.login') }}">Iniciar sesión</a></li>
             {% endif %}
             </ul>
         </div>
 
         <div class="carrito">
-            <a href="{{ url_for('carrito') }}"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+            <a href="{{ url_for('user.carrito') }}"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
         </div>
     </header>
     
 <!-- Selector de Sucursal (debajo del header) -->
 <div class="selector-sucursal-container">
     <div class="selector-sucursal-wrapper">
-        <form method="POST" action="{{ url_for('cambiar_sucursal') }}" class="selector-sucursal-form">
+        <form method="POST" action="{{ url_for('main.cambiar_sucursal') }}" class="selector-sucursal-form">
             <label for="sucursal-select">
                 <i class="fa-solid fa-store"></i> Comprar en:
             </label>
@@ -169,7 +169,7 @@ function cerrarModalSucursal() {
                                 <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
                             {% endif %}
                         </p>
-                        <form method="POST" action="{{ url_for('carrito_actualizar_item') }}" class="form-agregar-carrito">
+                        <form method="POST" action="{{ url_for('user.carrito_actualizar_item') }}" class="form-agregar-carrito">
                             <input type="hidden" name="producto_id" value="{{ producto.id }}">
                             <div class="cantidad-container">
                                 <label for="cantidad-{{ producto.id }}">Cantidad:</label>
@@ -194,7 +194,7 @@ function cerrarModalSucursal() {
                 <i class="fa-solid fa-box-open"></i>
                 <p>No hay productos disponibles en este momento.</p>
                 {% if session.get('tipo') == 'admin' %}
-                    <a href="{{ url_for('crear_producto') }}" class="btn primary">Crear primer producto</a>
+                    <a href="{{ url_for('admin.crear_producto') }}" class="btn primary">Crear primer producto</a>
                 {% endif %}
             </div>
             {% endif %}

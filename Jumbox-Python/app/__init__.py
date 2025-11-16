@@ -1,30 +1,29 @@
 import os
 from flask import Flask
+from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 
-from flask_bcrypt import Bcrypt
-
+bcrypt = Bcrypt()
 
 def create_app():
     load_dotenv()
 
     app = Flask(__name__)
-    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret")
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clave_secreta_super_segura")
     app.config["DB_NAME"] = "jumbox.db"
 
-    # inicializar extensiones
     bcrypt.init_app(app)
 
-    # registrar blueprints
+    # Registrar blueprints
     from .main.routes import main_bp
     from .auth.routes import auth_bp
-    from .users.routes import carrito_bp
+    from .user.routes import user_bp
     from .sucursal.routes import sucursal_bp
     from .admin.routes import admin_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(carrito_bp)
+    app.register_blueprint(user_bp)
     app.register_blueprint(sucursal_bp)
     app.register_blueprint(admin_bp)
 
