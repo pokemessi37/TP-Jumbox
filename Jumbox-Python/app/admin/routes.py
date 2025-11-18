@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.utils import (get_conn, require_login_redirect, listar_categorias, allowed_file)
 
-admin_bp = Blueprint('admin', __name__)
+admin_bp = Blueprint('admin', __name__, template_folder='../../templates/admin')
 
 @admin_bp.route('/administracion')
 def admin():
@@ -111,37 +111,6 @@ def admin_aprobar_solicitud(solicitud_id):
         except Exception as e:
             conn.rollback()
             flash(f"Error al aprobar solicitud: {e}", "error")
-    
-    return redirect(url_for('admin.admin_solicitudes'))
-
-@admin_bp.route('/admin/solicitudes/rechazar/<int:solicitud_id>', methods=['POST'])
-def admin_rechazar_solicitud(solicitud_id):
-    resp = require_login_redirect()
-    if resp:
-        return resp
-    
-    if session.get('tipo') != 'admin':
-        flash("No autorizado.", "error")
-        return redirect(url_for('main.home'))
-    
-    with get_conn() as conn:
-        try:
-            conn.execute("""
-                DELETE FROM detalle_pedido_reposicion 
-                WHERE fk_pedido_reposicion = ?
-            """, (solicitud_id,))
-            
-            conn.execute("""
-                DELETE FROM pedido_reposicion 
-                WHERE id_pedido_reposicion = ?
-            """, (solicitud_id,))
-            
-            conn.commit()
-            flash("Solicitud rechazada.", "success")
-            
-        except Exception as e:
-            conn.rollback()
-            flash(f"Error al rechazar solicitud: {e}", "error")
     
     return redirect(url_for('admin.admin_solicitudes'))
 
@@ -341,14 +310,4 @@ def editar_producto(id_producto):
 @admin_bp.post('/productos/editar')
 def productos_editar():
     flash("Editar producto: pendiente de implementar", "error")
-    return redirect(url_for('admin.productos'))
-
-@admin_bp.post('/productos/<int:prod_id>/activar')
-def productos_activar(prod_id):
-    flash(f"Activar producto {prod_id}: pendiente", "error")
-    return redirect(url_for('admin.productos'))
-
-@admin_bp.post('/productos/<int:prod_id>/desactivar')
-def productos_desactivar(prod_id):
-    flash(f"Desactivar producto {prod_id}: pendiente", "error")
     return redirect(url_for('admin.productos'))

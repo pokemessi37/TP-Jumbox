@@ -2175,3 +2175,108 @@ MIS COMPRAS - CLIENTE
         padding: 8px;
     }
 }
+
+
+.pedido-completo-card{
+    margin-bottom: 25px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.pedido-header-completo{
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+
+.pedido-header-completo-div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pedido-header-completo-div-h3{
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.pedido-header-completo-div-div{
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: #666;
+}
+
+.pedido-header-completo-div-div-div{
+    margin-top: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.pedido-header-completo-div-div-div-div{
+    text-align: right;
+}
+
+.pedido-header-completo-total{
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.pedido-header-completo-total2{
+    font-size: 24px;
+    font-weight: bold;
+    color: #07b407;
+}
+
+.pedido-header-completo-estado{
+    margin-top: 10px;
+}
+
+.productos-del-pedido{
+    padding: 20px;
+    background: white;
+}
+
+.productos-del-pedido-h4{
+    margin: 0 0 15px 0;
+    color: #555;
+    font-size: 16px;
+}
+
+.productos-del-pedido-div{
+    display: grid;
+    gap: 10px;
+}
+
+.productos-del-pedido-div2{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.productos-del-pedido-span{
+    font-weight: 500;
+    color: #333;
+}
+
+.productos-del-pedido-span2{
+    color: #666;
+    font-size: 14px;
+}
+
+.acciones-pedidos{
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    text-align: right;
+}
+

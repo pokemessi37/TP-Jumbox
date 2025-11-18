@@ -7,7 +7,7 @@ from google.auth.transport import requests as google_requests
 from app import bcrypt
 from app.utils import get_conn
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__, template_folder='../../templates/auth')
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 

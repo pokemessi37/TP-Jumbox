@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 def create_app():
     load_dotenv()
 
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../static')
     app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clave_secreta_super_segura")
     app.config["DB_NAME"] = "jumbox.db"
 

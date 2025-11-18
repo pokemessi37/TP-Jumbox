@@ -43,63 +43,89 @@
 
         <div class="pedidos-clientes-container">
             <div class="card-pedidos">
-                <h2><i class="fa-solid fa-shopping-bag"></i> Pedidos Pendientes</h2>
+                <h2><i class="fa-solid fa-shopping-bag"></i> Pedidos de Clientes</h2>
                 
                 {% if pedidos %}
-                <div class="tabla-wrapper">
-                    <table class="tabla-pedidos">
-                        <thead>
-                            <tr>
-                                <th>ID Pedido</th>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Producto</th>
-                                <th class="center">Cantidad</th>
-                                <th class="center">Estado</th>
-                                <th class="center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for p in pedidos %}
-                            <tr class="{% if p['estado'] == 'enviado' %}pedido-enviado{% endif %}">
-                                <td><strong>#{{ p['id_pedido'] }}</strong></td>
-                                <td>{{ p['fecha'] }}</td>
-                                <td>{{ p['cliente_nombre'] }}</td>
-                                <td>{{ p['producto_nombre'] }}</td>
-                                <td class="center">{{ p['cantidad'] }}</td>
-                                <td class="center">
-                                    {% if p['estado'] == 'enviado' %}
-                                        <span class="estado-badge enviado">
-                                            <i class="fa-solid fa-check-circle"></i> Enviado
+                    {% for pedido in pedidos %}
+                    <div class="pedido-completo-card">
+                        <!-- Encabezado del pedido -->
+                        <div class="pedido-header-completo">
+                            <div class="pedido-header-completo-div">
+                                <div>
+                                    <h3 class="pedido-header-completo-div-h3">
+                                        <i class="fa-solid fa-receipt"></i> Pedido #{{ pedido['id_pedido'] }}
+                                    </h3>
+                                    <div class="pedido-header-completo-div-div">
+                                        <span>
+                                            <i class="fa-solid fa-calendar"></i> {{ pedido['fecha'] }}
                                         </span>
-                                    {% elif p['estado'] == 'pendiente' %}
-                                        <span class="estado-badge pendiente">
-                                            <i class="fa-solid fa-clock"></i> Pendiente
+                                        <span>
+                                            <i class="fa-solid fa-user"></i> {{ pedido['cliente_nombre'] }}
                                         </span>
-                                    {% else %}
-                                        <span class="estado-badge pendiente">
-                                            <i class="fa-solid fa-clock"></i> Pendiente
+                                        <span>
+                                            <i class="fa-solid fa-phone"></i> {{ pedido['cliente_telefono'] }}
                                         </span>
+                                    </div>
+                                    {% if pedido['cliente_direccion'] %}
+                                    <div class="pedido-header-completo-div-div-div">
+                                        <i class="fa-solid fa-location-dot"></i> {{ pedido['cliente_direccion'] }}
+                                    </div>
                                     {% endif %}
-                                </td>
-                                <td class="center">
-                                    {% if not p['estado'] or p['estado'] != 'enviado' %}
-                                    <form action="{{ url_for('sucursal.sucursal_enviar_pedido', id_pedido=p['id_pedido']) }}" method="post" style="display: inline;">
-                                        <button type="submit" class="btn-enviar-pedido">
-                                            <i class="fa-solid fa-truck"></i> Enviar
-                                        </button>
-                                    </form>
-                                    {% else %}
-                                    <span class="ya-enviado">
-                                        <i class="fa-solid fa-check"></i> Completado
+                                </div>
+                                
+                                <div class="pedido-header-completo-div-div-div">
+                                    <div class="pedido-header-completo-total">Total:</div>
+                                    <div class="pedido-header-completo-total2">
+                                        ${{ (pedido['total']) }}
+                                    </div>
+                                    <div class="pedido-header-completo-estado">
+                                        {% if pedido['estado'] == 'enviado' %}
+                                            <span class="estado-badge enviado">
+                                                <i class="fa-solid fa-check-circle"></i> Enviado
+                                            </span>
+                                        {% else %}
+                                            <span class="estado-badge pendiente">
+                                                <i class="fa-solid fa-clock"></i> Pendiente
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Productos del pedido -->
+                        <div class="productos-del-pedido">
+                            <h4 class="productos-del-pedido-h4">
+                                <i class="fa-solid fa-box"></i> Productos ({{ pedido['productos']|length }})
+                            </h4>
+                            <div class="productos-del-pedido-div">
+                                {% for producto in pedido['productos'] %}
+                                <div class="productos-del-pedido-div2">
+                                    <span class="productos-del-pedido-span">{{ producto['nombre'] }}</span>
+                                    <span class="productos-del-pedido-span2">
+                                        <i class="fa-solid fa-cube"></i> Cantidad: <strong>{{ producto['cantidad'] }}</strong>
                                     </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Acciones -->
+                        <div class="acciones-pedidos">
+                            {% if pedido['estado'] != 'enviado' %}
+                            <form action="{{ url_for('sucursal.sucursal_enviar_pedido', id_pedido=pedido['id_pedido']) }}" method="post" style="display: inline;">
+                                <button type="submit" class="btn-enviar-pedido" style="padding: 10px 24px;">
+                                    <i class="fa-solid fa-truck"></i> Marcar como Enviado
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="ya-enviado" style="font-size: 15px;">
+                                <i class="fa-solid fa-check-circle"></i> Pedido completado y enviado
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
                 <div class="sin-pedidos">
                     <i class="fa-solid fa-box-open"></i>

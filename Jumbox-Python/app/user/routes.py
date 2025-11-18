@@ -3,7 +3,7 @@ from datetime import date
 from app.utils import (get_conn, require_login_redirect, ensure_carrito_abierto,
                     leer_items, listar_sucursales, listar_categorias)
 
-user_bp = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__, template_folder='../../templates/user')
 
 @user_bp.get('/carrito')
 def carrito():
@@ -13,6 +13,8 @@ def carrito():
 
     id_cliente = session['id_cliente']
     cliente = {"id_cliente": id_cliente, "nombre": session.get('nombre', 'Usuario')}
+
+    COSTO_ENVIO = 6000.0
 
     with get_conn() as conn:
         sucursales = listar_sucursales(conn)
@@ -26,16 +28,19 @@ def carrito():
         sucursal_actual = next((s for s in sucursales if s['id'] == session['cliente_sucursal_id']), sucursales[0])
 
         car = ensure_carrito_abierto(conn, id_cliente)
-        items, total = leer_items(conn, car['id_carrito'])
+        items, subtotal = leer_items(conn, car['id_carrito'])
+        total = subtotal + COSTO_ENVIO if items else 0.0
         categorias = listar_categorias(conn)
 
     return render_template(
-        'vista_carrito.html',
+        'user/vista_carrito.html',
         cliente=cliente,
         categorias=categorias,
         sucursales=sucursales,
         sucursal_actual=sucursal_actual,
         items=items,
+        subtotal=subtotal,
+        costo_envio=COSTO_ENVIO,
         total=total,
         metodos_pago=['EFECTIVO', 'TARJETA']
     )
@@ -54,7 +59,34 @@ def carrito_actualizar_item():
         flash("Cantidad inválida.", "error")
         return redirect(url_for('user.carrito'))
 
+    # Obtener la sucursal seleccionada
+    cliente_sucursal_id = session.get('cliente_sucursal_id')
+    
+    if not cliente_sucursal_id:
+        flash("No hay sucursal seleccionada.", "error")
+        return redirect(url_for('user.carrito'))
+
     with get_conn() as conn:
+        # Verificar stock disponible en la sucursal
+        stock_disponible = conn.execute("""
+            SELECT COALESCE(a.cantidad, 0) AS stock
+            FROM producto p
+            LEFT JOIN almacen_sucursal a 
+                ON a.fk_producto = p.id_producto 
+                AND a.fk_sucursal = ?
+            WHERE p.id_producto = ?
+        """, (cliente_sucursal_id, producto_id)).fetchone()
+        
+        if not stock_disponible:
+            flash("Producto no encontrado.", "error")
+            return redirect(url_for('user.carrito'))
+        
+        stock_actual = stock_disponible['stock']
+        
+        if cantidad > stock_actual:
+            flash(f"Stock insuficiente. Solo hay {stock_actual} unidades disponibles en esta sucursal.", "error")
+            return redirect(url_for('user.carrito'))
+
         car = ensure_carrito_abierto(conn, id_cliente)
 
         ex = conn.execute("""
@@ -75,7 +107,7 @@ def carrito_actualizar_item():
                 VALUES (?,?,?)
             """, (producto_id, car['id_carrito'], cantidad))
 
-    flash("Carrito actualizado.", "success")
+    flash("Carrito actualizado correctamente.", "success")
     return redirect(url_for('user.carrito'))
 
 @user_bp.post('/carrito/items/remove')
@@ -223,8 +255,8 @@ def mis_compras():
             })
     
     return render_template('compras_cliente.html', 
-                         cliente=cliente,
-                         pedidos=pedidos_procesados)
+                        cliente=cliente,
+                        pedidos=pedidos_procesados)
 
 @user_bp.route('/actualizar-direccion', methods=['POST'])
 def actualizar_direccion():

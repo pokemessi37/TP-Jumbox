@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from datetime import date
 from app.utils import (get_conn, require_login_redirect, get_productos_sucursal)
 
-sucursal_bp = Blueprint('sucursal', __name__)
+sucursal_bp = Blueprint('sucursal', __name__, template_folder='../../templates/sucursal')
 
 @sucursal_bp.get('/panel-sucursal')
 def panel_sucursal():
@@ -36,8 +36,8 @@ def sucursal_almacen():
         productos = get_productos_sucursal(conn, cliente_sucursal_id)
     
     return render_template('sucursal_almacen.html', 
-                         sucursal=sucursal, 
-                         productos=productos)
+                        sucursal=sucursal, 
+                        productos=productos)
 
 @sucursal_bp.route('/sucursal/pedir-stock', methods=['GET', 'POST'])
 def sucursal_pedir_stock():
@@ -117,23 +117,51 @@ def sucursal_pedidos_clientes():
     cliente_sucursal_id = session.get('id_cliente')
 
     with get_conn() as conn:
+        # Agrupar pedidos completos, no por producto
         pedidos = conn.execute("""
             SELECT
                 ped.id_pedido,
                 ped.fecha,
                 ped.estado,
                 cli.nombre AS cliente_nombre,
-                p.nombre AS producto_nombre,
-                dp.cantidad
+                cli.telefono AS cliente_telefono,
+                cli.direccion AS cliente_direccion,
+                GROUP_CONCAT(p.nombre || '|' || dp.cantidad, '###') AS productos_detalle,
+                SUM(dp.cantidad * p.precio) AS total
             FROM pedido ped
             JOIN cliente cli ON cli.id_cliente = ped.fk_cliente
             JOIN detalles_pedido dp ON dp.fk_pedido = ped.id_pedido
             JOIN producto p ON p.id_producto = dp.fk_producto
             WHERE ped.fk_sucursal = ?
+            GROUP BY ped.id_pedido
             ORDER BY ped.id_pedido DESC
         """, (cliente_sucursal_id,)).fetchall()
+        
+        # Procesar los productos de cada pedido
+        pedidos_procesados = []
+        for pedido in pedidos:
+            productos = []
+            if pedido['productos_detalle']:
+                for prod_info in pedido['productos_detalle'].split('###'):
+                    partes = prod_info.split('|')
+                    if len(partes) == 2:
+                        productos.append({
+                            'nombre': partes[0],
+                            'cantidad': int(partes[1])
+                        })
+            
+            pedidos_procesados.append({
+                'id_pedido': pedido['id_pedido'],
+                'fecha': pedido['fecha'],
+                'estado': pedido['estado'],
+                'cliente_nombre': pedido['cliente_nombre'],
+                'cliente_telefono': pedido['cliente_telefono'],
+                'cliente_direccion': pedido['cliente_direccion'],
+                'productos': productos,
+                'total': pedido['total']
+            })
 
-    return render_template('sucursal_pedidos_clientes.html', pedidos=pedidos)
+    return render_template('sucursal/sucursal_pedidos_clientes.html', pedidos=pedidos_procesados)
 
 @sucursal_bp.post('/sucursal/pedidos-clientes/enviar/<int:id_pedido>')
 def sucursal_enviar_pedido(id_pedido):
